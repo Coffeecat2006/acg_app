@@ -21,8 +21,9 @@ jobs:
       - name: Flutter Pub Get
         run: flutter pub get
 
-      - name: Build iOS (no codesign)
-        run: flutter build ios --release --no-codesign
+      # 改用 flutter build ipa
+      - name: Build IPA
+        run: flutter build ipa --release --no-codesign
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@main
