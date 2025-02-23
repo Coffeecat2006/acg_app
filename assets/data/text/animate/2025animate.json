@@ -1,0 +1,46 @@
+[
+    {
+      "id": "2025030001",
+      "title": "敗北女角太多了",
+      "title_jp": "負けヒロインが多すぎる",
+      "cover_image": {
+        "local": "data/picture/2025030001.jpg",
+        "remote": "https://cdn.example.com/images/2025030001.jpg"
+      },
+      "details": {
+        "studio": "Studio ABC",
+        "seasons": [
+          {
+            "season_number": 1,
+            "episodes_count": 12,
+            "release_date": "2025-03-10"
+          }
+        ]
+
+      },
+      "version": "1.0.0",
+      "last_update": "2025-03-15"
+    },
+    {
+      "id": "2025030002",
+      "title": "死神 千年血戰篇",
+      "title_jp": "BLEACH 千年血戦篇",
+      "cover_image": {
+        "local": "data/picture/2025030002.jpg",
+        "remote": "https://cdn.example.com/images/2025030002.jpg"
+      },
+      "details": {
+        "studio": "Studio Pierrot",
+        "seasons": [
+          {
+            "season_number": 1,
+            "episodes_count": 13,
+            "release_date": "2025-04-01"
+          }
+        ]
+      },
+      "version": "1.0.0",
+      "last_update": "2025-03-15"
+    }
+  ]
+  

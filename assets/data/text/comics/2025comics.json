@@ -1,0 +1,36 @@
+[
+    {
+      "id": "2025020001",
+      "title": "死神 千年血戰篇 (漫畫)",
+      "title_jp": "BLEACH 千年血戦篇 (Manga)",
+      "cover_image": {
+        "local": "data/picture/2025020001.jpg",
+        "remote": "https://cdn.example.com/images/2025020001.jpg"
+      },
+      "details": {
+        "publisher": "集英社",
+        "volumes": 8,
+        "release_date_jp": "2025-02-15"
+
+      },
+      "version": "1.0.0",
+      "last_update": "2025-03-15"
+    },
+    {
+      "id": "2025020002",
+      "title": "鬼滅之刃 (漫畫)",
+      "title_jp": "鬼滅の刃 (Manga)",
+      "cover_image": {
+        "local": "data/picture/2025020002.jpg",
+        "remote": "https://cdn.example.com/images/2025020002.jpg"
+      },
+      "details": {
+        "publisher": "集英社",
+        "volumes": 23,
+        "release_date_jp": "2025-02-20"
+      },
+      "version": "1.0.0",
+      "last_update": "2025-03-15"
+    }
+  ]
+  

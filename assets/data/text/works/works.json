@@ -1,0 +1,29 @@
+{
+    "version": "1.0.0",
+    "last_update": "2025-03-01",
+    "works": [
+      {
+        "id": "W0001",
+        "title": "敗北女角太多了",
+        "title_jp": "負けヒロインが多すぎる",
+        "has_anime": true,
+        "anime_id": "2025030001",
+        "has_comics": false,
+        "comics_id": null,
+        "has_novel": true,
+        "novel_id": "2025010001"
+      },
+      {
+        "id": "W0002",
+        "title": "死神 千年血戰篇",
+        "title_jp": "BLEACH 千年血戦篇",
+        "has_anime": true,
+        "anime_id": "2025030002",
+        "has_comics": true,
+        "comics_id": "2025020001",
+        "has_novel": false,
+        "novel_id": null
+      }
+    ]
+  }
+  
