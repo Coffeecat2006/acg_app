@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'detail_page.dart';
+import 'detail_page.dart';  // 注意：這裡改成不帶別名的引用
 
 enum Category { all, anime, comics, novel }
 
@@ -105,11 +105,14 @@ class _HomePageState extends State<HomePage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(item['title'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Text(item['title_jp'] ?? ''),
-                  ]),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item['title'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 4),
+                      Text(item['title_jp'] ?? ''),
+                    ],
+                  ),
                 ),
               ],
             ),

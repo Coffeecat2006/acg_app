@@ -1,39 +1,62 @@
 [
-    {
-      "id": "2025010001",
-      "title": "敗北女角太多了 (小說)",
-      "title_jp": "負けヒロインが多すぎる (Light Novel)",
-      "cover_image": {
-        "local": "data/picture/2025010001.jpg",
-        "remote": "https://cdn.example.com/images/2025010001.jpg"
-      },
-      "details": {
-        "author": "作者 A",
-        "illustrator": "插畫家 B",
-        "publisher": "台版：XXXX 出版社 / 日版：YYYY 出版社",
-        "publish_date_tw": "2025-01-10",
-        "publish_date_jp": "2024-12-25"
-      },
-      "version": "1.0.0",
-      "last_update": "2025-03-15"
+  {
+    "id": "2025010001",
+    "title": "敗北女角太多了",
+    "title_jp": "負けヒロインが多すぎる",
+    "cover_image": {
+      "local": "data/picture/2025010003.jpg",
+      "remote": "https://cdn.example.com/images/2025010003.jpg"
     },
-    {
-      "id": "2025010002",
-      "title": "某某輕小說",
-      "title_jp": "あるライトノベル",
-      "cover_image": {
-        "local": "data/picture/2025010002.jpg",
-        "remote": "https://cdn.example.com/images/2025010002.jpg"
-      },
-      "details": {
-        "author": "作者 C",
-        "illustrator": "插畫家 D",
-        "publisher": "台版：AAAA / 日版：BBBB",
-        "publish_date_tw": "2025-01-20",
-        "publish_date_jp": "2024-12-30"
-      },
-      "version": "1.0.0",
-      "last_update": "2025-03-15"
-    }
-  ]
-  
+    "details": {
+      "type": "novel",
+      "author": "作者C",
+      "illustrator": "插畫家D",
+      "publish_date_tw": "2025-01-20",
+      "publish_date_jp": "2024-12-30",
+      "synopsis": "這是一部示範小說，敘述一位冒險者在異世界的日常與奮鬥故事。",
+      "cover_image": "https://cdn.example.com/images/2025010003.jpg",
+      "publisher": "台版：AAAA / 日版：BBBB",
+      "purchase_physical": [
+        { "platform_name": "博客來", "link": "https://www.books.com.tw/xxx" }
+      ],
+      "purchase_ebook": [
+        { "platform_name": "Kindle", "link": "https://amazon.com/xxx" }
+      ],
+      "official_site": "https://novel-sample.com",
+      "social_link": "https://facebook.com/novel-sample",
+      "anime_adaptation_info": "暫無動畫化消息"
+    },
+    "version": "1.2.0",
+    "last_update": "2025-04-20"
+  },
+  {
+    "id": "2025010002",
+    "title": "BanG Dream! Ave Mujica",
+    "title_jp": "BanG Dream! Ave Mujica",
+    "cover_image": {
+      "local": "data/picture/2025010003.jpg",
+      "remote": "https://cdn.example.com/images/2025010003.jpg"
+    },
+    "details": {
+      "type": "novel",
+      "author": "作者C",
+      "illustrator": "插畫家D",
+      "publish_date_tw": "2025-01-20",
+      "publish_date_jp": "2024-12-30",
+      "synopsis": "這是一部示範小說，敘述一位冒險者在異世界的日常與奮鬥故事。",
+      "cover_image": "https://cdn.example.com/images/2025010003.jpg",
+      "publisher": "台版：AAAA / 日版：BBBB",
+      "purchase_physical": [
+        { "platform_name": "博客來", "link": "https://www.books.com.tw/xxx" }
+      ],
+      "purchase_ebook": [
+        { "platform_name": "Kindle", "link": "https://amazon.com/xxx" }
+      ],
+      "official_site": "https://novel-sample.com",
+      "social_link": "https://facebook.com/novel-sample",
+      "anime_adaptation_info": "暫無動畫化消息"
+    },
+    "version": "1.2.0",
+    "last_update": "2025-04-20"
+  }
+]

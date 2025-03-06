@@ -1,46 +1,182 @@
 [
-    {
-      "id": "2025030001",
-      "title": "敗北女角太多了",
-      "title_jp": "負けヒロインが多すぎる",
-      "cover_image": {
-        "local": "data/picture/2025030001.jpg",
-        "remote": "https://cdn.example.com/images/2025030001.jpg"
-      },
-      "details": {
-        "studio": "Studio ABC",
-        "seasons": [
-          {
-            "season_number": 1,
-            "episodes_count": 12,
-            "release_date": "2025-03-10"
-          }
-        ]
-
-      },
-      "version": "1.0.0",
-      "last_update": "2025-03-15"
+  {
+    "id": "2025030004",
+    "title": "BanG Dream! Ave Mujica",
+    "title_jp": "BanG Dream! Ave Mujica",
+    "cover_image": {
+      "local": "data/picture/2025030004.jpg",
+      "remote": "https://cdn.example.com/images/2025030004.jpg"
     },
-    {
-      "id": "2025030002",
-      "title": "死神 千年血戰篇",
-      "title_jp": "BLEACH 千年血戦篇",
-      "cover_image": {
-        "local": "data/picture/2025030002.jpg",
-        "remote": "https://cdn.example.com/images/2025030002.jpg"
-      },
-      "details": {
-        "studio": "Studio Pierrot",
-        "seasons": [
-          {
-            "season_number": 1,
-            "episodes_count": 13,
-            "release_date": "2025-04-01"
-          }
-        ]
-      },
-      "version": "1.0.0",
-      "last_update": "2025-03-15"
-    }
-  ]
-  
+    "details": {
+      "type": "anime",
+      "studio": "Sample Studio",
+      "publisher": "test 代理商",
+      "announcement_date": "2025-03-01",
+      "seasons": [
+        {
+          "season_number": 1,
+          "production_announcement_date": "2025-02-15",
+          "release_date": "2025-03-10",
+          "episodes_count": 12,
+          "episodes": [
+            { "episode_number": 1, "air_time": "2025-03-10T20:00:00" },
+            { "episode_number": 2, "air_time": "2025-03-17T20:00:00" },
+            { "episode_number": 3, "air_time": "2025-03-24T20:00:00" },
+            { "episode_number": 4, "air_time": "2025-03-31T20:00:00" },
+            { "episode_number": 5, "air_time": "2025-04-07T20:00:00" },
+            { "episode_number": 6, "air_time": "2025-04-14T20:00:00" },
+            { "episode_number": 7, "air_time": "2025-04-21T20:00:00" },
+            { "episode_number": 8, "air_time": "2025-04-28T20:00:00" },
+            { "episode_number": 9, "air_time": "2025-05-05T20:00:00" },
+            { "episode_number": 10, "air_time": "2025-05-12T20:00:00" },
+            { "episode_number": 11, "air_time": "2025-05-19T20:00:00" },
+            { "episode_number": 12, "air_time": "2025-05-26T20:00:00" }
+          ]
+        }
+      ],
+      "synopsis": "這是一部測試資料，內容講述主角如何在BanG Dream! Ave Mujica，對抗BanG Dream! Ave Mujica。",
+      "cover_image": "https://cdn.example.com/images/2025030004.jpg",
+      "main_staff": [
+        "監督: XXX",
+        "角色設計: YYY"
+      ],
+      "original": "ZZZ 原作",
+      "cast": [
+        { "actor": "聲優A", "role": "角色A" },
+        { "actor": "聲優B", "role": "角色B" }
+      ],
+      "op_ed": [
+        { "type": "OP", "name": "OP Song", "link": "https://youtube.com/xxx" },
+        { "type": "ED", "name": "ED Song", "link": "https://youtube.com/yyy" }
+      ],
+      "watch_platforms": [
+        { "name": "平台1", "link": "https://xxx" },
+        { "name": "平台2", "link": "https://yyy" }
+      ],
+      "official_site": "https://anime-sample.com",
+      "social_link": "https://twitter.com/anime-sample"
+    },
+    "version": "1.2.0",
+    "last_update": "2025-04-20"
+  },
+  {
+    "id": "2025030002",
+    "title": "死神 千年血戰篇",
+    "title_jp": "BLEACH 千年血戦篇",
+    "cover_image": {
+      "local": "data/picture/2025030004.jpg",
+      "remote": "https://cdn.example.com/images/2025030004.jpg"
+    },
+    "details": {
+      "type": "anime",
+      "studio": "Sample Studio",
+      "publisher": "Sample 代理商",
+      "announcement_date": "2025-03-01",
+      "seasons": [
+        {
+          "season_number": 1,
+          "production_announcement_date": "2025-02-15",
+          "release_date": "2025-03-10",
+          "episodes_count": 12,
+          "episodes": [
+            { "episode_number": 1, "air_time": "2025-03-11T20:00:00" },
+            { "episode_number": 2, "air_time": "2025-03-18T20:00:00" },
+            { "episode_number": 3, "air_time": "2025-03-25T20:00:00" },
+            { "episode_number": 4, "air_time": "2025-04-01T20:00:00" },
+            { "episode_number": 5, "air_time": "2025-04-08T20:00:00" },
+            { "episode_number": 6, "air_time": "2025-04-15T20:00:00" },
+            { "episode_number": 7, "air_time": "2025-04-22T20:00:00" },
+            { "episode_number": 8, "air_time": "2025-04-29T20:00:00" },
+            { "episode_number": 9, "air_time": "2025-05-06T20:00:00" },
+            { "episode_number": 10, "air_time": "2025-05-13T20:00:00" },
+            { "episode_number": 11, "air_time": "2025-05-20T20:00:00" },
+            { "episode_number": 12, "air_time": "2025-05-27T20:00:00" }
+          ]
+        }
+      ],
+      "synopsis": "這是一部示範動畫，test，test。",
+      "cover_image": "https://cdn.example.com/images/2025030004.jpg",
+      "main_staff": [
+        "監督: XXX",
+        "角色設計: YYY"
+      ],
+      "original": "ZZZ 原作",
+      "cast": [
+        { "actor": "聲優A", "role": "角色A" },
+        { "actor": "聲優B", "role": "角色B" }
+      ],
+      "op_ed": [
+        { "type": "OP", "name": "OP Song", "link": "https://youtube.com/xxx" },
+        { "type": "ED", "name": "ED Song", "link": "https://youtube.com/yyy" }
+      ],
+      "watch_platforms": [
+        { "name": "平台1", "link": "https://xxx" },
+        { "name": "平台2", "link": "https://yyy" }
+      ],
+      "official_site": "https://anime-sample.com",
+      "social_link": "https://twitter.com/anime-sample"
+    },
+    "version": "1.2.0",
+    "last_update": "2025-04-20"
+  },
+  {
+    "id": "2025030001",
+    "title": "敗北女角太多了",
+    "title_jp": "負けヒロインが多すぎる",
+    "cover_image": {
+      "local": "data/picture/2025030004.jpg",
+      "remote": "https://cdn.example.com/images/2025030004.jpg"
+    },
+    "details": {
+      "type": "anime",
+      "studio": "Sample Studio",
+      "publisher": "Sample 代理商",
+      "announcement_date": "2025-03-01",
+      "seasons": [
+        {
+          "season_number": 1,
+          "production_announcement_date": "2025-02-15",
+          "release_date": "2025-03-10",
+          "episodes_count": 12,
+          "episodes": [
+            { "episode_number": 1, "air_time": "2025-03-10T21:00:00" },
+            { "episode_number": 2, "air_time": "2025-03-17T21:00:00" },
+            { "episode_number": 3, "air_time": "2025-03-24T21:00:00" },
+            { "episode_number": 4, "air_time": "2025-03-30T21:00:00" },
+            { "episode_number": 5, "air_time": "2025-04-07T21:00:00" },
+            { "episode_number": 6, "air_time": "2025-04-14T21:00:00" },
+            { "episode_number": 7, "air_time": "2025-04-21T21:00:00" },
+            { "episode_number": 8, "air_time": "2025-04-28T21:00:00" },
+            { "episode_number": 9, "air_time": "2025-05-05T23:00:00" },
+            { "episode_number": 10, "air_time": "2025-05-12T24:00:00" },
+            { "episode_number": 11, "air_time": "2025-05-19T21:00:00" },
+            { "episode_number": 12, "air_time": "2025-05-26T21:00:00" }
+          ]
+        }
+      ],
+      "synopsis": "這是一部示範動畫，負けヒロインが多すぎる，負けヒロインが多すぎる。",
+      "cover_image": "https://cdn.example.com/images/2025030004.jpg",
+      "main_staff": [
+        "監督: XXX",
+        "角色設計: YYY"
+      ],
+      "original": "ZZZ 原作",
+      "cast": [
+        { "actor": "聲優A", "role": "角色A" },
+        { "actor": "聲優B", "role": "角色B" }
+      ],
+      "op_ed": [
+        { "type": "OP", "name": "OP Song", "link": "https://youtube.com/xxx" },
+        { "type": "ED", "name": "ED Song", "link": "https://youtube.com/yyy" }
+      ],
+      "watch_platforms": [
+        { "name": "平台1", "link": "https://xxx" },
+        { "name": "平台2", "link": "https://yyy" }
+      ],
+      "official_site": "https://anime-sample.com",
+      "social_link": "https://twitter.com/anime-sample"
+    },
+    "version": "1.2.0",
+    "last_update": "2025-04-20"
+  }
+]

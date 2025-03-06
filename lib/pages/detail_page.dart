@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'anime_detail_page.dart';
+import 'novel_detail_page.dart';
+import 'comics_detail_page.dart';
 
 class DetailPage extends StatelessWidget {
   final Map<String, dynamic> work;
@@ -6,60 +9,95 @@ class DetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isAnime = work['has_anime'] == true;
-    final isComics = work['has_comics'] == true;
-    final isNovel = work['has_novel'] == true;
+    // 基本資料，假設這些來自 works.json
+    final title = work['title'] ?? '未命名作品';
+    final titleJp = work['title_jp'] ?? '';
+    final coverUrl = (work['cover_image'] != null && work['cover_image']['remote'] != null)
+        ? work['cover_image']['remote']
+        : '';
+    final synopsis = work['synopsis'] ?? '暫無簡介';
 
     return Scaffold(
-      appBar: AppBar(title: Text(work['title'] ?? '詳細')),
+      appBar: AppBar(title: Text(title)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
+            // 封面
+            coverUrl.isNotEmpty
+                ? Image.network(coverUrl, height: 200, fit: BoxFit.cover)
+                : Container(
               height: 200,
               color: Colors.grey[300],
-              child: const Center(child: Text('封面圖')),
+              child: const Center(child: Text('無封面圖')),
             ),
             const SizedBox(height: 16),
-            Text(work['title'] ?? '', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            if (work['title_jp'] != null) Text(work['title_jp']),
+            Text(title,
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            if (titleJp.isNotEmpty)
+              Text(titleJp,
+                  style: const TextStyle(fontSize: 18, color: Colors.grey)),
             const SizedBox(height: 16),
-            if (isAnime) _buildAnimeSection(),
-            if (isComics || isNovel) _buildBookSection(),
+            Text(synopsis),
+            const SizedBox(height: 24),
+
+            // 媒體區塊
+            if (work['has_anime'] == true)
+              _buildMediaCard(
+                context,
+                mediaType: '動畫',
+                onTapMore: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AnimeDetailPage(work: work),
+                    ),
+                  );
+                },
+              ),
+            if (work['has_novel'] == true)
+              _buildMediaCard(
+                context,
+                mediaType: '輕小說',
+                onTapMore: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => NovelDetailPage(work: work),
+                    ),
+                  );
+                },
+              ),
+            if (work['has_comics'] == true)
+              _buildMediaCard(
+                context,
+                mediaType: '漫畫',
+                onTapMore: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ComicsDetailPage(work: work),
+                    ),
+                  );
+                },
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildAnimeSection() {
-    // 在這裡可以讀取 work['studio']、work['publisher']、op/ed、配音員等欄位
-    // 本示範僅列出幾個假欄位
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('【動畫資訊】', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        Text('製作廠商: ${work['studio'] ?? '---'}'),
-        Text('代理商: ${work['publisher'] ?? '---'}'),
-        // ...可再擴充
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-
-  Widget _buildBookSection() {
-    // 在這裡可以讀取 work['author']、work['illustrator']、work['publish_date_jp'] 等欄位
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('【書籍資訊】', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        Text('作者: ${work['author'] ?? '---'} / 插畫: ${work['illustrator'] ?? '---'}'),
-        Text('出版社: ${work['publisher'] ?? '---'}'),
-        // ...可再擴充
-        const SizedBox(height: 16),
-      ],
+  Widget _buildMediaCard(BuildContext context, {required String mediaType, required VoidCallback onTapMore}) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: ListTile(
+        title: Text('該作品有 $mediaType 版本'),
+        trailing: ElevatedButton(
+          onPressed: onTapMore,
+          child: const Text('查看更多'),
+        ),
+      ),
     );
   }
 }

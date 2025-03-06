@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 
 // 引用其他頁面
 import 'pages/home_page.dart';
@@ -9,16 +11,18 @@ import 'pages/ranking_page.dart';
 import 'pages/favorites_page.dart';
 import 'pages/user_page.dart';
 import 'pages/settings_page.dart';
-import 'pages/detail_page.dart'; // 若搜尋要跳至 DetailPage，可在 SearchDelegate 用到
+import 'pages/detail_page.dart' as detail; // 只保留這一個
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // 初始化特定語系 (例如 'zh_TW')
+  await initializeDateFormatting('zh_TW', null);
   runApp(const MyApp());
 }
 
 /// 最上層 App
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -32,7 +36,6 @@ class MyApp extends StatelessWidget {
 /// 將原本 main_screen.dart 的功能搬進來
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
-
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
@@ -40,7 +43,6 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedIndex = 0;
-
   List<Map<String, dynamic>> _works = [];
   final List<Widget> _pages = [];
 
@@ -56,12 +58,9 @@ class _MainScreenState extends State<MainScreen> {
       final jsonString = await rootBundle.loadString('assets/data/text/works/works.json');
       final data = json.decode(jsonString);
       final worksList = (data['works'] as List).map((e) => e as Map<String, dynamic>).toList();
-
       setState(() {
         _works = worksList;
-
-        // 依序初始化 5 個頁面 (首頁、時間表、排行榜、收藏、使用者)
-        // 首頁需要傳入 _works
+        // 初始化頁面
         _pages
           ..clear()
           ..addAll([
@@ -77,12 +76,10 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  /// 點擊底部導覽列
   void _onItemTapped(int index) {
     setState(() => _selectedIndex = index);
   }
 
-  /// Drawer
   Widget _buildDrawer() {
     return Drawer(
       child: SafeArea(
@@ -112,44 +109,46 @@ class _MainScreenState extends State<MainScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.feedback),
-              title: Row(
-                children: [
-                  const Text('問題與回報'),
-                  const SizedBox(width: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(4)),
-                    child: const Text('新', style: TextStyle(color: Colors.white, fontSize: 10)),
-                  ),
-                ],
-              ),
+              title: const Text('問題與回報'),
+              onTap: () => Navigator.pop(context),
             ),
             ListTile(
               leading: const Icon(Icons.share),
               title: const Text('分享應用'),
+              onTap: () => Navigator.pop(context),
             ),
             ListTile(
               leading: const Icon(Icons.update),
               title: const Text('資料更新'),
+              onTap: () => Navigator.pop(context),
             ),
             ListTile(
               leading: const Icon(Icons.settings),
               title: const Text('設定'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SettingsPage()),
+                Navigator.of(context).push(
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) => const SettingsPage(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: child,
+                      );
+                    },
+                  ),
                 );
               },
             ),
             ListTile(
               leading: const Icon(Icons.help),
               title: const Text('幫助'),
+              onTap: () => Navigator.pop(context),
             ),
             ListTile(
               leading: const Icon(Icons.dark_mode),
               title: const Text('切換暗色'),
+              onTap: () => Navigator.pop(context),
             ),
             const Spacer(),
             const Divider(height: 1),
@@ -172,14 +171,12 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 如果尚未載入完成 _works，就顯示一個 Loading
     if (_pages.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: const Text('ACG大全')),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
-
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
@@ -196,7 +193,6 @@ class _MainScreenState extends State<MainScreen> {
                 context: context,
                 delegate: WorksSearchDelegate(_works),
               );
-              // 如果需要對搜尋結果做進一步動作，可在這裡處理
             },
           ),
         ],
@@ -219,7 +215,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
-/// 搜尋委派
 class WorksSearchDelegate extends SearchDelegate<String> {
   final List<Map<String, dynamic>> allWorks;
   WorksSearchDelegate(this.allWorks);
@@ -233,10 +228,7 @@ class WorksSearchDelegate extends SearchDelegate<String> {
 
   @override
   Widget buildLeading(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () => close(context, ''),
-    );
+    return IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => close(context, ''));
   }
 
   @override
@@ -246,11 +238,9 @@ class WorksSearchDelegate extends SearchDelegate<String> {
       final titleJp = (w['title_jp'] ?? '').toString();
       return title.contains(query) || titleJp.contains(query);
     }).toList();
-
     if (filtered.isEmpty) {
       return const Center(child: Text('找不到相關作品'));
     }
-
     return ListView.builder(
       itemCount: filtered.length,
       itemBuilder: (context, index) {
@@ -259,10 +249,9 @@ class WorksSearchDelegate extends SearchDelegate<String> {
           title: Text(item['title'] ?? ''),
           subtitle: Text(item['title_jp'] ?? ''),
           onTap: () {
-            // 點擊搜尋結果 → 跳到詳細頁
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => DetailPage(work: item)),
+              MaterialPageRoute(builder: (_) => detail.DetailPage(work: item)),
             );
           },
         );
@@ -277,7 +266,6 @@ class WorksSearchDelegate extends SearchDelegate<String> {
       final titleJp = (w['title_jp'] ?? '').toString();
       return title.contains(query) || titleJp.contains(query);
     }).toList();
-
     return ListView.builder(
       itemCount: suggestions.length,
       itemBuilder: (context, index) {
