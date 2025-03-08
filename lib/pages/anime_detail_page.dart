@@ -7,14 +7,13 @@ class AnimeDetailPage extends StatelessWidget {
   const AnimeDetailPage({Key? key, required this.work}) : super(key: key);
 
   Future<Map<String, dynamic>> _fetchAnimeDetail() async {
-    final jsonString =
-    await rootBundle.loadString('assets/data/text/animate/2025animate.json');
-    final List data = json.decode(jsonString);
     final String animeId = work['anime_id'];
+    final String year = animeId.substring(0, 4); // 如果動畫ID也包含年份
+    final jsonString =
+    await rootBundle.loadString('assets/data/text/animate/${year}animate.json');
+    final List data = json.decode(jsonString);
     final detail = data.firstWhere((element) => element['id'] == animeId,
-        orElse: () {
-          return {};
-        });
+        orElse: () => {});
     if (detail is Map && detail.isEmpty) {
       throw Exception("找不到對應的動畫資料 (animeId=$animeId)");
     }

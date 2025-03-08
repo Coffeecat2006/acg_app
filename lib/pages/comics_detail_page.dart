@@ -7,14 +7,13 @@ class ComicsDetailPage extends StatelessWidget {
   const ComicsDetailPage({Key? key, required this.work}) : super(key: key);
 
   Future<Map<String, dynamic>> _fetchComicsDetail() async {
-    final jsonString =
-    await rootBundle.loadString('assets/data/text/comics/2025comics.json');
-    final List data = json.decode(jsonString);
     final String comicsId = work['comics_id'];
+    final String year = comicsId.substring(0, 4); // 取前四個字作為年份
+    final jsonString =
+    await rootBundle.loadString('assets/data/text/comics/${year}comics.json');
+    final List data = json.decode(jsonString);
     final detail = data.firstWhere((element) => element['id'] == comicsId,
-        orElse: () {
-          return {};
-        });
+        orElse: () => {});
     if (detail is Map && detail.isEmpty) {
       throw Exception("找不到對應的漫畫資料 (comicsId=$comicsId)");
     }
