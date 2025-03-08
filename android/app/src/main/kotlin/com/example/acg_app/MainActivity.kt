@@ -1,4 +1,4 @@
-package com.example.acg_app
+package com.coffeecatstudio.acg_app
 
 import io.flutter.embedding.android.FlutterActivity
 
