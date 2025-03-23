@@ -2,38 +2,97 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// 引用其他頁面
+
 import 'pages/home_page.dart';
 import 'pages/schedule_page.dart';
 import 'pages/ranking_page.dart';
 import 'pages/favorites_page.dart';
 import 'pages/user_page.dart';
 import 'pages/settings_page.dart';
-import 'pages/detail_page.dart' as detail; // 只保留這一個
+import 'pages/detail_page.dart' as detail;
+import 'pages/about_page.dart';
+import 'pages/tag_management_page.dart';
+import 'pages/feedback_page.dart';
+import 'pages/intro_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // 初始化特定語系 (例如 'zh_TW')
   await initializeDateFormatting('zh_TW', null);
   runApp(const MyApp());
 }
 
-/// 最上層 App
-class MyApp extends StatelessWidget {
+
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+  @override
+  State<MyApp> createState() => _MyAppState();
+
+  static _MyAppState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_MyAppState>();
+}
+
+class _MyAppState extends State<MyApp> {
+  ThemeMode _themeMode = ThemeMode.system;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTheme();
+  }
+
+  Future<void> _loadTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    final themeString = prefs.getString('theme_mode') ?? 'system';
+    setState(() {
+      _themeMode = _stringToThemeMode(themeString);
+    });
+  }
+
+  Future<void> _saveTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('theme_mode', _themeMode.name);
+  }
+
+  void toggleTheme() {
+    setState(() {
+      if (_themeMode == ThemeMode.light) {
+        _themeMode = ThemeMode.dark;
+      } else if (_themeMode == ThemeMode.dark) {
+        _themeMode = ThemeMode.light;
+      } else {
+        _themeMode = ThemeMode.dark;
+      }
+    });
+    _saveTheme();
+  }
+
+  ThemeMode get themeMode => _themeMode;
+
+  ThemeMode _stringToThemeMode(String str) {
+    switch (str) {
+      case 'light':
+        return ThemeMode.light;
+      case 'dark':
+        return ThemeMode.dark;
+      default:
+        return ThemeMode.system;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'ACG大全',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData(primarySwatch: Colors.blue, brightness: Brightness.light),
+      darkTheme: ThemeData(primarySwatch: Colors.blue, brightness: Brightness.dark),
+      themeMode: _themeMode,
       home: const MainScreen(),
     );
   }
 }
 
-/// 將原本 main_screen.dart 的功能搬進來
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
   @override
@@ -45,14 +104,36 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   List<Map<String, dynamic>> _works = [];
   final List<Widget> _pages = [];
+  bool isDark = false;
 
   @override
   void initState() {
     super.initState();
     _loadWorks();
+    _checkAndShowIntroPage();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final theme = MyApp.of(context)?.themeMode;
+      setState(() {
+        isDark = theme == ThemeMode.dark ||
+            (theme == ThemeMode.system &&
+                MediaQuery.of(context).platformBrightness == Brightness.dark);
+      });
+    });
   }
 
-  /// 載入 works.json
+  Future<void> _checkAndShowIntroPage() async {
+    final prefs = await SharedPreferences.getInstance();
+    bool hasShownIntro = prefs.getBool('hasShownIntro') ?? false;
+
+    if (!hasShownIntro) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const IntroPage()),
+      );
+    }
+  }
+
   Future<void> _loadWorks() async {
     try {
       final jsonString = await rootBundle.loadString('assets/data/text/works/works.json');
@@ -60,7 +141,6 @@ class _MainScreenState extends State<MainScreen> {
       final worksList = (data['works'] as List).map((e) => e as Map<String, dynamic>).toList();
       setState(() {
         _works = worksList;
-        // 初始化頁面
         _pages
           ..clear()
           ..addAll([
@@ -110,7 +190,12 @@ class _MainScreenState extends State<MainScreen> {
             ListTile(
               leading: const Icon(Icons.feedback),
               title: const Text('問題與回報'),
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const FeedbackScreen()),
+                );
+              },
             ),
             ListTile(
               leading: const Icon(Icons.share),
@@ -141,14 +226,42 @@ class _MainScreenState extends State<MainScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.help),
-              title: const Text('幫助'),
+              leading: const Icon(Icons.info_outline),
+              title: const Text('關於'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AboutPage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.label_outline),
+              title: const Text('標籤管理'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const TagManagementPage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.money),
+              title: const Text('贊助應用開發'),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: const Icon(Icons.dark_mode),
-              title: const Text('切換暗色'),
-              onTap: () => Navigator.pop(context),
+              leading: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+              title: Text(isDark ? '切換亮色' : '切換暗色'),
+              onTap: () {
+                Navigator.pop(context);
+                MyApp.of(context)?.toggleTheme();
+                setState(() {
+                  isDark = !isDark;
+                });
+              },
             ),
             const Spacer(),
             const Divider(height: 1),
@@ -157,9 +270,9 @@ class _MainScreenState extends State<MainScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
-                  Text('使用者名稱', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('使用者名稱(開發中)', style: TextStyle(fontWeight: FontWeight.bold)),
                   SizedBox(height: 4),
-                  Text('user@example.com'),
+                  Text('test@test.com'),
                 ],
               ),
             ),

@@ -18,9 +18,9 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final filteredWorks = widget.works.where((item) {
       if (_selectedCategory == Category.all) return true;
-      if (_selectedCategory == Category.anime && item['has_anime'] == true) return true;
-      if (_selectedCategory == Category.comics && item['has_comics'] == true) return true;
-      if (_selectedCategory == Category.novel && item['has_novel'] == true) return true;
+      if (_selectedCategory == Category.anime && (item['anime']?.isNotEmpty ?? false)) return true;
+      if (_selectedCategory == Category.comics && (item['comics']?.isNotEmpty ?? false)) return true;
+      if (_selectedCategory == Category.novel && (item['novel']?.isNotEmpty ?? false)) return true;
       return false;
     }).toList();
 
@@ -28,7 +28,7 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         children: [
           Container(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.background,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               children: [

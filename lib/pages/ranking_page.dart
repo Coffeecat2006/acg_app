@@ -6,7 +6,7 @@ class RankingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Center(child: Text('排行榜頁面')),
+      body: Center(child: Text('排行榜頁面(我還沒做 我懶得做)')),
     );
   }
 }

@@ -25,26 +25,55 @@ class FavoritesDatabaseHelper {
   }
 
   Future _createDB(Database db, int version) async {
-    const idType = 'TEXT PRIMARY KEY';
-    const textType = 'TEXT NOT NULL';
-
+    // 建立 favorites 表，使用 fav_key 作為主鍵（組合 id 與 type）
     await db.execute('''
       CREATE TABLE favorites (
-        id $idType,
-        title $textType,
-        type $textType
+        fav_key TEXT PRIMARY KEY,
+        id TEXT,
+        title TEXT NOT NULL,
+        type TEXT NOT NULL,
+        release_date TEXT,
+        fav_date TEXT,
+        tags TEXT,
+        is_favorite INTEGER NOT NULL DEFAULT 0
       )
     ''');
+
+    // 建立 tags 表，單一欄位作為主鍵
+    await db.execute('''
+      CREATE TABLE tags (
+        tag TEXT NOT NULL PRIMARY KEY
+      )
+    ''');
+
+    // 插入預設標籤
+    await db.insert('tags', {'tag': '⭐ 待觀看'});
+    await db.insert('tags', {'tag': '✔️ 已觀看'});
   }
 
+  // Favorites 表操作
   Future<int> insertFavorite(Map<String, dynamic> favorite) async {
     final db = await instance.database;
+    // 生成組合鍵：id 與 type
+    final String favKey = '${favorite["id"]}_${favorite["type"]}';
+    favorite["fav_key"] = favKey;
+    // 插入時設定 is_favorite 為 1
+    favorite["is_favorite"] = 1;
     return await db.insert('favorites', favorite, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<int> deleteFavorite(String id) async {
+  Future<int> deleteFavorite(String id, String type) async {
     final db = await instance.database;
-    return await db.delete('favorites', where: 'id = ?', whereArgs: [id]);
+    final String favKey = '${id}_${type}';
+    return await db.delete('favorites', where: 'fav_key = ?', whereArgs: [favKey]);
+  }
+
+  // 判斷是否已收藏 (依據 id 與 type)
+  Future<bool> isFavorite(String id, String type) async {
+    final db = await instance.database;
+    final String favKey = '${id}_${type}';
+    final res = await db.query('favorites', where: 'fav_key = ?', whereArgs: [favKey]);
+    return res.isNotEmpty;
   }
 
   Future<List<Map<String, dynamic>>> getAllFavorites() async {
@@ -52,8 +81,31 @@ class FavoritesDatabaseHelper {
     return await db.query('favorites');
   }
 
+  // Tags 表操作
+  Future<List<Map<String, dynamic>>> getTags() async {
+    final db = await instance.database;
+    return await db.query('tags');
+  }
+
+  Future<int> insertTag(String tag) async {
+    final db = await instance.database;
+    return await db.insert('tags', {'tag': tag}, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<int> deleteTag(String tag) async {
+    final db = await instance.database;
+    return await db.delete('tags', where: 'tag = ?', whereArgs: [tag]);
+  }
+
+  Future<int> updateFavoriteStatus(String id, String type, int status) async {
+    final db = await instance.database;
+    final String favKey = '${id}_$type';
+    return await db.update('favorites', {'is_favorite': status},
+        where: 'fav_key = ?', whereArgs: [favKey]);
+  }
+
   Future close() async {
     final db = await instance.database;
-    db.close();
+    return db.close();
   }
 }

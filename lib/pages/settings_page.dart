@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'terms_of_service_page.dart';
+import 'privacy_policy_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -8,23 +10,23 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  // 假資料，實際上可用 state management 或 provider 等管理
-  String theme = 'system'; // 系統預設 / light / dark
+  // 假資料
+  String theme = 'system';
   bool saveLocally = true;
   bool autoUpdate = true;
   bool pushNotifications = true;
   int imageQuality = 80;
   String language = 'zh-TW';
-  String cacheSize = '1.2 GB';
-  String username = '動漫達人';
-  String email = 'anime@example.com';
+  String cacheSize = 'test.test GB';
+  String username = 'test';
+  String email = 'test@test.com';
   bool privacyMode = false;
   bool showComments = true;
   bool commentNotifications = true;
   bool autoPlayVideos = false;
   bool showSpoilers = false;
-  bool shareWatchHistory = true;
-  bool shareCollections = true;
+  bool sharelist = false;
+  bool shareCollections = false;
   bool showOnlineStatus = true;
   bool newEpisodeNotifications = true;
   bool followedSeriesUpdates = true;
@@ -75,8 +77,8 @@ class _SettingsPageState extends State<SettingsPage> {
         case 'showSpoilers':
           showSpoilers = value;
           break;
-        case 'shareWatchHistory':
-          shareWatchHistory = value;
+        case 'sharelist':
+          sharelist = value;
           break;
         case 'shareCollections':
           shareCollections = value;
@@ -235,8 +237,8 @@ class _SettingsPageState extends State<SettingsPage> {
                         ],
                       ),
                       Switch(
-                        value: shareWatchHistory,
-                        onChanged: (val) => handleSettingChange('shareWatchHistory', val),
+                        value: sharelist,
+                        onChanged: (val) => handleSettingChange('sharelist', val),
                       ),
                     ],
                   ),
@@ -369,18 +371,24 @@ class _SettingsPageState extends State<SettingsPage> {
                   Row(
                     children: const [
                       Text('版本: '),
-                      Text('2.1.0 (Build 2024022401)', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text('pre-alpha-v0.1.0', style: TextStyle(fontWeight: FontWeight.bold)),
                     ],
                   ),
                   TextButton(
                     onPressed: () {
-                      // 查看使用條款
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const TermsOfServicePage()),
+                      );
                     },
-                    child: const Text('查看使用條款'),
+                    child: const Text('查看服務條款'),
                   ),
                   TextButton(
                     onPressed: () {
-                      // 查看隱私政策
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const PrivacyPolicyPage()),
+                      );
                     },
                     child: const Text('查看隱私政策'),
                   ),

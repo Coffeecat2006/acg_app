@@ -23,6 +23,8 @@ dependencies:
   intl: ^0.18.0
   cupertino_icons: ^1.0.8
   flutter_launcher_icons: ^0.14.3
+  file_selector: ^1.0.3
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:
@@ -30,6 +32,12 @@ dev_dependencies:
 
   path_provider: ^2.0.14
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: "^0.14.3"
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

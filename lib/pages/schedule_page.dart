@@ -1,7 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+
+import 'anime_detail_page.dart';
+import 'novel_detail_page.dart';
+import 'comics_detail_page.dart';
 
 class SchedulePage extends StatefulWidget {
   const SchedulePage({Key? key}) : super(key: key);
@@ -12,156 +16,109 @@ class SchedulePage extends StatefulWidget {
 
 class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
   List<AnimeEpisode> _animeEpisodes = [];
   List<BookRelease> _bookReleases = [];
+  DateTime currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
+  bool showAnimeMark = false;
+  int weekOffset = 0;
+  int selectedDayIndex = DateTime.now().weekday - 1;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-
-    // 初始化前先呼叫 async 方法
-    _initData();
+    _loadData();
   }
 
-  Future<void> _initData() async {
-    // 請根據您實際的 JSON 檔路徑與解析方式來改寫
-    _animeEpisodes = await _loadAnimeData();
-    _bookReleases = await _loadBookData();
-
-    // 更新畫面
+  Future<void> _loadData() async {
+    _animeEpisodes = await _loadAnime();
+    _bookReleases = await _loadBooks();
     setState(() {});
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  // 假裝讀取 2025animate.json，解析「每集播出時間」後，整理成 AnimeEpisode
-  Future<List<AnimeEpisode>> _loadAnimeData() async {
-    // 假裝讀取本地 JSON
+  Future<List<AnimeEpisode>> _loadAnime() async {
     final jsonString = await rootBundle.loadString('assets/data/text/animate/2025animate.json');
     final List rawList = json.decode(jsonString);
-
-    final List<AnimeEpisode> result = [];
+    List<AnimeEpisode> result = [];
     for (var item in rawList) {
-      final details = item['details'] as Map?;
-      if (details == null) continue;
+      final animeId = item['id'];
+      final title = item['title'] ?? '';
+      final details = item['details'];
       final seasons = details['seasons'] as List?;
       if (seasons == null) continue;
-
-      // 取出動畫標題
-      final animeTitle = item['title'] ?? '???';
-
       for (var s in seasons) {
         final episodes = s['episodes'] as List?;
         if (episodes == null) continue;
         for (var ep in episodes) {
-          final epNumber = ep['episode_number'] ?? 0;
+          final epNum = ep['episode_number'] ?? 0;
           final airTimeStr = ep['air_time'] ?? '';
           final airTime = DateTime.tryParse(airTimeStr);
           if (airTime != null) {
-            result.add(AnimeEpisode(
-              animeTitle: animeTitle,
-              episodeNumber: epNumber,
-              airTime: airTime,
-            ));
+            result.add(AnimeEpisode(animeId, title, epNum, airTime));
           }
         }
       }
     }
-
-    // 按時間排序
-    result.sort((a, b) => a.airTime.compareTo(b.airTime));
     return result;
   }
 
-  // 假裝讀取 2025novel.json + 2025comics.json，合併後回傳
-  Future<List<BookRelease>> _loadBookData() async {
-    final List<BookRelease> result = [];
-
-    // 讀取小說
+  Future<List<BookRelease>> _loadBooks() async {
+    List<BookRelease> result = [];
     final novelJson = await rootBundle.loadString('assets/data/text/novel/2025novel.json');
     final List novelList = json.decode(novelJson);
     for (var item in novelList) {
+      final novelId = item['id'];
       final title = item['title'] ?? '???';
-      final details = item['details'] as Map?;
+      final details = item['details'];
       if (details == null) continue;
-      final schedules = details['release_schedule'] as List?;
-      if (schedules == null) continue;
-      for (var sc in schedules) {
-        final dateStr = sc['release_date'] ?? '';
-        final date = DateTime.tryParse(dateStr);
-        final detail = sc['chapter'] != null ? '第${sc['chapter']}章' : '';
-        if (date != null) {
-          result.add(BookRelease(
-            title: title,
-            releaseDate: date,
-            detail: detail,
-          ));
-        }
+      final dateTwStr = details['publish_date_tw'] ?? '';
+      final dateTw = DateTime.tryParse(dateTwStr);
+      if (dateTw != null) {
+        result.add(BookRelease('novel', novelId, title, dateTw, '台版', 'TW'));
+      }
+      final dateJpStr = details['publish_date_jp'] ?? '';
+      final dateJp = DateTime.tryParse(dateJpStr);
+      if (dateJp != null) {
+        result.add(BookRelease('novel', novelId, title, dateJp, '日版', 'JP'));
       }
     }
-
-    // 讀取漫畫
     final comicsJson = await rootBundle.loadString('assets/data/text/comics/2025comics.json');
     final List comicsList = json.decode(comicsJson);
     for (var item in comicsList) {
+      final comicsId = item['id'];
       final title = item['title'] ?? '???';
-      final details = item['details'] as Map?;
+      final details = item['details'];
       if (details == null) continue;
-      final schedules = details['release_schedule'] as List?;
-      if (schedules == null) continue;
-      for (var sc in schedules) {
-        final dateStr = sc['release_date'] ?? '';
-        final date = DateTime.tryParse(dateStr);
-        final detail = sc['volume'] != null ? '第${sc['volume']}卷' : '';
-        if (date != null) {
-          result.add(BookRelease(
-            title: title,
-            releaseDate: date,
-            detail: detail,
-          ));
-        }
+      final dateTwStr = details['release_date_tw'] ?? '';
+      final dateTw = DateTime.tryParse(dateTwStr);
+      if (dateTw != null) {
+        result.add(BookRelease('comics', comicsId, title, dateTw, '台版', 'TW'));
+      }
+      final dateJpStr = details['release_date_jp'] ?? '';
+      final dateJp = DateTime.tryParse(dateJpStr);
+      if (dateJp != null) {
+        result.add(BookRelease('comics', comicsId, title, dateJp, '日版', 'JP'));
       }
     }
-
-    // 按時間排序
-    result.sort((a, b) => a.releaseDate.compareTo(b.releaseDate));
     return result;
   }
 
   @override
   Widget build(BuildContext context) {
-    // 資料可能尚未載入
-    final animeTab = AnimeScheduleTab(episodes: _animeEpisodes);
-    final bookTab = MonthlyBookTab(releases: _bookReleases);
-
     return Scaffold(
       body: Column(
         children: [
-          Container(
-            color: Colors.white,
-            child: TabBar(
-              controller: _tabController,
-              labelColor: Colors.blue,
-              unselectedLabelColor: Colors.grey,
-              indicatorColor: Colors.blue,
-              tabs: const [
-                Tab(text: '本季動畫'),
-                Tab(text: '本月書籍'),
-              ],
-            ),
+          TabBar(
+            controller: _tabController,
+            labelColor: Colors.blue,
+            tabs: const [Tab(text: '本季動畫'), Tab(text: '本月書籍')],
           ),
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
-                animeTab,
-                bookTab,
+                _buildAnimeScheduleTab(),
+                _buildBookMonthly(),
               ],
             ),
           ),
@@ -169,134 +126,84 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
       ),
     );
   }
-}
 
-// =======================
-// 本季動畫：週數切換 + 每日排程
-// =======================
-class AnimeScheduleTab extends StatefulWidget {
-  final List<AnimeEpisode> episodes;
-  const AnimeScheduleTab({Key? key, required this.episodes}) : super(key: key);
-
-  @override
-  State<AnimeScheduleTab> createState() => _AnimeScheduleTabState();
-}
-
-class _AnimeScheduleTabState extends State<AnimeScheduleTab> {
-  int weekOffset = 0;
-  int selectedDayIndex = DateTime.now().weekday - 1; // 0-based (Mon=0, ... Sun=6)
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildAnimeScheduleTab() {
     final now = DateTime.now();
     final currentMonday = now.subtract(Duration(days: now.weekday - 1));
     final targetMonday = currentMonday.add(Duration(days: 7 * weekOffset));
     final targetSunday = targetMonday.add(const Duration(days: 6));
-
-    // 過濾：只顯示該週 (targetMonday ~ targetSunday) 的 episodes
-    final weekEpisodes = widget.episodes.where((ep) {
-      return ep.airTime.isAfter(_startOfDay(targetMonday).subtract(const Duration(seconds: 1))) &&
-          ep.airTime.isBefore(_endOfDay(targetSunday).add(const Duration(seconds: 1)));
+    final weekEpisodes = _animeEpisodes.where((ep) {
+      return ep.airTime.isAfter(targetMonday.subtract(const Duration(seconds: 1))) &&
+          ep.airTime.isBefore(targetSunday.add(const Duration(days: 1)));
     }).toList();
 
-    // 按天分組
-    final grouped = _groupByDay(weekEpisodes, targetMonday);
+    final grouped = <int, List<AnimeEpisode>>{};
+    for (var ep in weekEpisodes) {
+      final diff = ep.airTime.difference(targetMonday).inDays;
+      if (diff >= 0 && diff < 7) {
+        grouped.putIfAbsent(diff, () => []).add(ep);
+      }
+    }
+
+    final dailyList = grouped[selectedDayIndex] ?? [];
+    dailyList.sort((a, b) => a.airTime.compareTo(b.airTime));
+
+    // 分段
+    final am = dailyList.where((ep) => ep.airTime.hour < 12).toList();
+    final pm = dailyList.where((ep) => ep.airTime.hour >= 12 && ep.airTime.hour < 18).toList();
+    final night = dailyList.where((ep) => ep.airTime.hour >= 18).toList();
 
     return Column(
       children: [
         Container(
-          color: Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.all(8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconButton(
-                onPressed: () => setState(() => weekOffset--),
-                icon: const Icon(Icons.chevron_left),
-              ),
-              Text('${_formatDate(targetMonday)} ~ ${_formatDate(targetSunday)}'),
-              IconButton(
-                onPressed: () => setState(() => weekOffset++),
-                icon: const Icon(Icons.chevron_right),
-              ),
+              IconButton(icon: const Icon(Icons.chevron_left), onPressed: () => setState(() => weekOffset--)),
+              Text('${DateFormat('MM/dd').format(targetMonday)} ~ ${DateFormat('MM/dd').format(targetSunday)}'),
+              IconButton(icon: const Icon(Icons.chevron_right), onPressed: () => setState(() => weekOffset++)),
             ],
           ),
         ),
-        Container(
-          color: Colors.white,
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(7, (index) {
-              final dayDate = targetMonday.add(Duration(days: index));
-              final isSelected = selectedDayIndex == index;
-              final label = ['一','二','三','四','五','六','日'][index];
-              return GestureDetector(
-                onTap: () => setState(() => selectedDayIndex = index),
-                child: Column(
-                  children: [
-                    Text(label,
-                      style: TextStyle(
-                        color: isSelected ? Colors.blue : Colors.grey[700],
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text('${dayDate.month}/${dayDate.day}',
-                      style: TextStyle(
-                        color: isSelected ? Colors.blue : Colors.grey[700],
-                      ),
-                    ),
-                    if (isSelected)
-                      Container(
-                        margin: const EdgeInsets.only(top: 4),
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
-                  ],
-                ),
-              );
-            }),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: List.generate(7, (index) {
+            final dayDate = targetMonday.add(Duration(days: index));
+            final isSelected = selectedDayIndex == index;
+            final label = ['一','二','三','四','五','六','日'][index];
+            return GestureDetector(
+              onTap: () => setState(() => selectedDayIndex = index),
+              child: Column(
+                children: [
+                  Text(label, style: TextStyle(color: isSelected ? Colors.blue : Colors.grey)),
+                  Text('${dayDate.month}/${dayDate.day}', style: TextStyle(color: isSelected ? Colors.blue : Colors.grey)),
+                  if (isSelected)
+                    Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.blue, shape: BoxShape.circle)),
+                ],
+              ),
+            );
+          }),
+        ),
+        const Divider(),
+        Expanded(
+          child: dailyList.isEmpty
+              ? const Center(child: Text('今天沒有更新'))
+              : ListView(
+            children: [
+              if (am.isNotEmpty) _buildAnimeSection('上午', am),
+              if (pm.isNotEmpty) _buildAnimeSection('下午', pm),
+              if (night.isNotEmpty) _buildAnimeSection('晚上', night),
+            ],
           ),
         ),
-        const Divider(height: 1),
-        Expanded(
-          child: _buildDaySchedule(grouped, selectedDayIndex, targetMonday),
-        ),
       ],
     );
   }
 
-  Widget _buildDaySchedule(Map<int, List<AnimeEpisode>> grouped, int dayIndex, DateTime baseMonday) {
-    final list = grouped[dayIndex] ?? [];
-    if (list.isEmpty) {
-      return const Center(child: Text('今天沒有更新的作品'));
-    }
-
-    // 依照時間排序
-    list.sort((a, b) => a.airTime.compareTo(b.airTime));
-
-    // 依「上午 / 下午 / 晚上」分段
-    final am = list.where((ep) => ep.airTime.hour < 12).toList();
-    final pm = list.where((ep) => ep.airTime.hour >= 12 && ep.airTime.hour < 18).toList();
-    final night = list.where((ep) => ep.airTime.hour >= 18).toList();
-
-    return ListView(
-      children: [
-        if (am.isNotEmpty) _buildPart('上午', am),
-        if (pm.isNotEmpty) _buildPart('下午', pm),
-        if (night.isNotEmpty) _buildPart('晚上', night),
-      ],
-    );
-  }
-
-  Widget _buildPart(String label, List<AnimeEpisode> episodes) {
+  Widget _buildAnimeSection(String label, List<AnimeEpisode> episodes) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      padding: const EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -304,13 +211,16 @@ class _AnimeScheduleTabState extends State<AnimeScheduleTab> {
           const SizedBox(height: 4),
           ...episodes.map((ep) {
             final timeStr = DateFormat('HH:mm').format(ep.airTime);
+            final daysDiff = ep.airTime.difference(DateTime.now()).inDays;
+            final diffText = daysDiff == 0 ? '今天' : (daysDiff > 0 ? '距今 $daysDiff 天後' : '距今 ${-daysDiff} 天前');
             return Card(
-              margin: const EdgeInsets.symmetric(vertical: 4),
               child: ListTile(
-                title: Text('${ep.animeTitle} 第${ep.episodeNumber}集'),
-                subtitle: Text('$timeStr 播出'),
+                title: Text('${ep.title} 第${ep.episode}集'),
+                subtitle: Text('$timeStr 播出 | $diffText'),
                 onTap: () {
-                  _showBottomSheet(ep);
+                  Navigator.push(context, MaterialPageRoute(
+                    builder: (_) => AnimeDetailPage(work: {"title": ep.title, "anime_id": ep.animeId}),
+                  ));
                 },
               ),
             );
@@ -319,188 +229,107 @@ class _AnimeScheduleTabState extends State<AnimeScheduleTab> {
       ),
     );
   }
+  Widget _buildBookMonthly() {
+    final today = DateTime.now();
+    final year = currentMonth.year;
+    final month = currentMonth.month;
+    final daysInMonth = DateTime(year, month + 1, 0).day;
+    final firstWeekday = DateTime(year, month, 1).weekday;
+    final totalCells = firstWeekday - 1 + daysInMonth;
 
-  void _showBottomSheet(AnimeEpisode ep) {
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('${ep.animeTitle} - 第${ep.episodeNumber}集',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Text('播出時間：${DateFormat('yyyy/MM/dd HH:mm').format(ep.airTime)}'),
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerRight,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(ctx); // 關閉 Bottom Sheet
-                    // 跳轉至詳細頁
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => DetailPage(title: ep.animeTitle))
-                    );
-                  },
-                  child: const Text('顯示更多'),
-                ),
-              )
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // 幫助計算當天 00:00:00
-  DateTime _startOfDay(DateTime date) {
-    return DateTime(date.year, date.month, date.day, 0, 0, 0);
-  }
-
-  // 幫助計算當天 23:59:59
-  DateTime _endOfDay(DateTime date) {
-    return DateTime(date.year, date.month, date.day, 23, 59, 59);
-  }
-
-  // 依「星期幾」分組
-  Map<int, List<AnimeEpisode>> _groupByDay(List<AnimeEpisode> list, DateTime baseMonday) {
-    final map = <int, List<AnimeEpisode>>{};
-    for (var ep in list) {
-      final diff = ep.airTime.difference(baseMonday).inDays;
-      if (diff >= 0 && diff < 7) {
-        map.putIfAbsent(diff, () => []);
-        map[diff]!.add(ep);
-      }
-    }
-    return map;
-  }
-
-  String _formatDate(DateTime date) {
-    return DateFormat('MM/dd').format(date);
-  }
-}
-
-// =======================
-// 本月書籍：月曆顯示
-// =======================
-class MonthlyBookTab extends StatefulWidget {
-  final List<BookRelease> releases;
-  const MonthlyBookTab({Key? key, required this.releases}) : super(key: key);
-
-  @override
-  State<MonthlyBookTab> createState() => _MonthlyBookTabState();
-}
-
-class _MonthlyBookTabState extends State<MonthlyBookTab> {
-  late DateTime currentMonth;
-
-  @override
-  void initState() {
-    super.initState();
-    currentMonth = DateTime.now();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final firstDayOfMonth = DateTime(currentMonth.year, currentMonth.month, 1);
-    final daysInMonth = DateTime(currentMonth.year, currentMonth.month + 1, 0).day;
-    final firstWeekday = firstDayOfMonth.weekday; // 1(Mon) ~ 7(Sun)
-    final leadingEmptySlots = firstWeekday - 1;
-    final totalCells = leadingEmptySlots + daysInMonth;
-    final rowCount = (totalCells / 7).ceil();
-
-    // 過濾該月的書籍
-    final monthlyReleases = widget.releases.where((book) {
-      return book.releaseDate.year == currentMonth.year &&
-          book.releaseDate.month == currentMonth.month;
-    }).toList();
+    final filteredBooks = _bookReleases.where((b) => b.date.year == year && b.date.month == month).toList();
+    final animeDates = showAnimeMark
+        ? _animeEpisodes.map((ep) => DateTime(ep.airTime.year, ep.airTime.month, ep.airTime.day)).toSet()
+        : <DateTime>{};
 
     return Column(
       children: [
-        Container(
-          color: Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                onPressed: _prevMonth,
-                icon: const Icon(Icons.chevron_left),
-              ),
-              Text('${currentMonth.year}年 ${currentMonth.month}月', style: const TextStyle(fontSize: 16)),
-              IconButton(
-                onPressed: _nextMonth,
-                icon: const Icon(Icons.chevron_right),
-              ),
-            ],
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(icon: const Icon(Icons.chevron_left),
+                onPressed: () => setState(() => currentMonth = DateTime(year, month - 1))),
+            Text('$year年 $month月'),
+            IconButton(icon: const Icon(Icons.chevron_right),
+                onPressed: () => setState(() => currentMonth = DateTime(year, month + 1))),
+          ],
         ),
-        const Divider(height: 1),
-        Container(
-          color: Colors.grey[200],
-          child: Row(
-            children: const [
-              _WeekdayHeader('一'),
-              _WeekdayHeader('二'),
-              _WeekdayHeader('三'),
-              _WeekdayHeader('四'),
-              _WeekdayHeader('五'),
-              _WeekdayHeader('六'),
-              _WeekdayHeader('日'),
-            ],
-          ),
+        SwitchListTile(
+          title: const Text('顯示動畫標記'),
+          value: showAnimeMark,
+          onChanged: (val) => setState(() => showAnimeMark = val),
         ),
         Expanded(
           child: GridView.builder(
-            padding: const EdgeInsets.all(8),
-            itemCount: rowCount * 7,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7,
-              mainAxisSpacing: 4,
-              crossAxisSpacing: 4,
-            ),
-            itemBuilder: (context, index) {
-              if (index < leadingEmptySlots || index >= totalCells) {
-                return const SizedBox.shrink();
-              }
-              final day = index - leadingEmptySlots + 1;
-              final date = DateTime(currentMonth.year, currentMonth.month, day);
-
-              // 找出當天有出版的書
-              final booksToday = monthlyReleases.where((b) =>
-              b.releaseDate.year == date.year &&
-                  b.releaseDate.month == date.month &&
-                  b.releaseDate.day == date.day
-              ).toList();
+            itemCount: ((totalCells / 7).ceil()) * 7,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7),
+            itemBuilder: (_, index) {
+              final dayNum = index - (firstWeekday - 1) + 1;
+              if (dayNum < 1 || dayNum > daysInMonth) return const SizedBox.shrink();
+              final date = DateTime(year, month, dayNum);
+              final isToday = date.day == today.day && date.month == today.month && date.year == today.year;
+              final booksToday = filteredBooks.where((b) =>
+              b.date.year == date.year && b.date.month == date.month && b.date.day == date.day).toList();
+              final hasAnime = animeDates.contains(date);
 
               return GestureDetector(
-                onTap: booksToday.isNotEmpty ? () {
-                  _showBottomSheet(context, date, booksToday);
-                } : null,
+                onTap: () {
+                  final diff = date.difference(DateTime(today.year, today.month, today.day)).inDays;
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (_) => Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: booksToday.isEmpty
+                          ? const Text('當天無出版資訊')
+                          : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(DateFormat('yyyy/MM/dd').format(date),
+                              style: const TextStyle(fontWeight: FontWeight.bold)),
+                          Text(diff == 0 ? '今天' : (diff > 0 ? '距今 $diff 天後' : '距今 ${-diff} 天前')),
+                          const Divider(),
+                          for (var b in booksToday)
+                            ListTile(
+                              title: Text(b.title),
+                              subtitle: Text('${b.detail} (${b.version})'),
+                              trailing: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  Widget page = b.type == 'novel'
+                                      ? NovelDetailPage(work: {"title": b.title, "novel_id": b.id})
+                                      : ComicsDetailPage(work: {"title": b.title, "comics_id": b.id});
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+                                },
+                                child: const Text('詳細'),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
                 child: Container(
+                  margin: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
-                    color: booksToday.isNotEmpty ? Colors.blue[50] : Colors.white,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: Colors.grey[300]!),
+                    border: Border.all(color: Colors.grey),
+                    color: hasAnime && showAnimeMark ? Colors.pink[50] : null,
                   ),
                   child: Stack(
                     children: [
-                      Positioned(
-                        top: 4, left: 4,
-                        child: Text('$day', style: const TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                      if (booksToday.isNotEmpty)
-                        Positioned(
-                          bottom: 4, left: 4, right: 4,
-                          child: Text(
-                            '${booksToday.length}本',
-                            style: const TextStyle(fontSize: 12, color: Colors.blue),
-                            textAlign: TextAlign.right,
-                          ),
-                        ),
+                      Positioned(top: 2, left: 2, child: Text('$dayNum')),
+                      if (isToday)
+                        const Positioned(top: 2, right: 2,
+                            child: Icon(Icons.circle, size: 8, color: Colors.blue)),
+                      ...booksToday.map((b) {
+                        Color markColor;
+                        if (b.type == 'novel' && b.version == 'TW') markColor = Colors.blue;
+                        else if (b.type == 'novel') markColor = Colors.green;
+                        else if (b.version == 'TW') markColor = Colors.orange;
+                        else markColor = Colors.purple;
+                        return Positioned(bottom: 1, left: 1, right: 1,
+                            child: Container(height: 2, color: markColor));
+                      }).toList(),
                     ],
                   ),
                 ),
@@ -508,118 +337,49 @@ class _MonthlyBookTabState extends State<MonthlyBookTab> {
             },
           ),
         ),
+        const Divider(),
+        Padding(
+          padding: const EdgeInsets.all(4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _legend(Colors.blue, '台版小說'),
+              _legend(Colors.green, '日版小說'),
+              _legend(Colors.orange, '台版漫畫'),
+              _legend(Colors.purple, '日版漫畫'),
+              _legend(Colors.pink, '動畫'),
+            ],
+          ),
+        ),
       ],
     );
   }
 
-  void _prevMonth() {
-    setState(() {
-      currentMonth = DateTime(currentMonth.year, currentMonth.month - 1, 1);
-    });
-  }
-
-  void _nextMonth() {
-    setState(() {
-      currentMonth = DateTime(currentMonth.year, currentMonth.month + 1, 1);
-    });
-  }
-
-  void _showBottomSheet(BuildContext context, DateTime date, List<BookRelease> books) {
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          child: Wrap(
-            children: [
-              Text(
-                DateFormat('yyyy/MM/dd (E)', 'zh').format(date),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              for (var book in books)
-                ListTile(
-                  title: Text(book.title),
-                  subtitle: Text(book.detail),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    // 跳詳細頁
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => DetailPage(title: book.title))
-                    );
-                  },
-                )
-            ],
-          ),
-        );
-      },
+  Widget _legend(Color color, String label) {
+    return Row(
+      children: [
+        Container(width: 12, height: 12, color: color),
+        const SizedBox(width: 4),
+        Text(label, style: const TextStyle(fontSize: 12)),
+      ],
     );
   }
 }
 
-class _WeekdayHeader extends StatelessWidget {
-  final String text;
-  const _WeekdayHeader(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Center(
-          child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
-        ),
-      ),
-    );
-  }
-}
-
-// =======================
-// DetailPage (簡易示範)
-// =======================
-class DetailPage extends StatelessWidget {
-  final String title;
-  const DetailPage({Key? key, required this.title}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('詳細資訊'),
-      ),
-      body: Center(
-        child: Text(
-          '這裡顯示更完整的作品資訊：\n$title',
-          textAlign: TextAlign.center,
-        ),
-      ),
-    );
-  }
-}
-
-// =======================
-// 資料模型 (示範)
-// =======================
 class AnimeEpisode {
-  final String animeTitle;
-  final int episodeNumber;
+  final String animeId;
+  final String title;
+  final int episode;
   final DateTime airTime;
-
-  AnimeEpisode({
-    required this.animeTitle,
-    required this.episodeNumber,
-    required this.airTime,
-  });
+  AnimeEpisode(this.animeId, this.title, this.episode, this.airTime);
 }
 
 class BookRelease {
+  final String type;
+  final String id;
   final String title;
-  final DateTime releaseDate;
+  final DateTime date;
   final String detail;
-
-  BookRelease({
-    required this.title,
-    required this.releaseDate,
-    required this.detail,
-  });
+  final String version;
+  BookRelease(this.type, this.id, this.title, this.date, this.detail, this.version);
 }
