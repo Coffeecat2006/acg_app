@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-
 import 'pages/home_page.dart';
 import 'pages/schedule_page.dart';
 import 'pages/ranking_page.dart';
@@ -23,25 +21,21 @@ void main() async {
   runApp(const MyApp());
 }
 
-
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
   @override
   State<MyApp> createState() => _MyAppState();
-
   static _MyAppState? of(BuildContext context) =>
       context.findAncestorStateOfType<_MyAppState>();
 }
 
 class _MyAppState extends State<MyApp> {
   ThemeMode _themeMode = ThemeMode.system;
-
   @override
   void initState() {
     super.initState();
     _loadTheme();
   }
-
   Future<void> _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
     final themeString = prefs.getString('theme_mode') ?? 'system';
@@ -49,12 +43,10 @@ class _MyAppState extends State<MyApp> {
       _themeMode = _stringToThemeMode(themeString);
     });
   }
-
   Future<void> _saveTheme() async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString('theme_mode', _themeMode.name);
   }
-
   void toggleTheme() {
     setState(() {
       if (_themeMode == ThemeMode.light) {
@@ -67,9 +59,7 @@ class _MyAppState extends State<MyApp> {
     });
     _saveTheme();
   }
-
   ThemeMode get themeMode => _themeMode;
-
   ThemeMode _stringToThemeMode(String str) {
     switch (str) {
       case 'light':
@@ -80,7 +70,6 @@ class _MyAppState extends State<MyApp> {
         return ThemeMode.system;
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -105,7 +94,7 @@ class _MainScreenState extends State<MainScreen> {
   List<Map<String, dynamic>> _works = [];
   final List<Widget> _pages = [];
   bool isDark = false;
-
+  final List<String> _appBarTitles = ['ACG大全', '時間表', '排行榜', '收藏', '使用者'];
   @override
   void initState() {
     super.initState();
@@ -120,11 +109,9 @@ class _MainScreenState extends State<MainScreen> {
       });
     });
   }
-
   Future<void> _checkAndShowIntroPage() async {
     final prefs = await SharedPreferences.getInstance();
     bool hasShownIntro = prefs.getBool('hasShownIntro') ?? false;
-
     if (!hasShownIntro) {
       await Future.delayed(const Duration(milliseconds: 500));
       Navigator.push(
@@ -133,7 +120,6 @@ class _MainScreenState extends State<MainScreen> {
       );
     }
   }
-
   Future<void> _loadWorks() async {
     try {
       final jsonString = await rootBundle.loadString('assets/data/text/works/works.json');
@@ -155,11 +141,9 @@ class _MainScreenState extends State<MainScreen> {
       debugPrint("Error loading works.json: $e");
     }
   }
-
   void _onItemTapped(int index) {
     setState(() => _selectedIndex = index);
   }
-
   Widget _buildDrawer() {
     return Drawer(
       child: SafeArea(
@@ -281,19 +265,18 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
   }
-
   @override
   Widget build(BuildContext context) {
     if (_pages.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('ACG大全')),
+        appBar: AppBar(title: Text(_appBarTitles[0])),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: const Text('ACG大全'),
+        title: Text(_appBarTitles[_selectedIndex]),
         leading: IconButton(
           icon: const Icon(Icons.menu),
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
@@ -331,19 +314,16 @@ class _MainScreenState extends State<MainScreen> {
 class WorksSearchDelegate extends SearchDelegate<String> {
   final List<Map<String, dynamic>> allWorks;
   WorksSearchDelegate(this.allWorks);
-
   @override
   List<Widget> buildActions(BuildContext context) {
     return [
       IconButton(icon: const Icon(Icons.clear), onPressed: () => query = ''),
     ];
   }
-
   @override
   Widget buildLeading(BuildContext context) {
     return IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => close(context, ''));
   }
-
   @override
   Widget buildResults(BuildContext context) {
     final filtered = allWorks.where((w) {
@@ -371,7 +351,6 @@ class WorksSearchDelegate extends SearchDelegate<String> {
       },
     );
   }
-
   @override
   Widget buildSuggestions(BuildContext context) {
     final suggestions = allWorks.where((w) {

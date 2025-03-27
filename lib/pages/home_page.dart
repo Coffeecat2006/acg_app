@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'detail_page.dart';  // 注意：這裡改成不帶別名的引用
+import 'detail_page.dart';
 
 enum Category { all, anime, comics, novel }
 

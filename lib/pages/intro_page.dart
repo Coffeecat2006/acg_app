@@ -24,12 +24,12 @@ class _IntroPageState extends State<IntroPage> {
   Widget build(BuildContext context) {
     final pages = [
       _buildPage(
-        title: "ACG大全 App - Pre-Alpha v0.1.0",
-        content: "發布時間：2025 年 3 月 23 日 19:00（UTC+8）\n版本代號：Nebula\n狀態：Pre-Alpha 測試版\n類型：APK（Android專用）",
+        title: "ACG大全 App - Pre-Alpha v0.1.1",
+        content: "發布時間：2025 年 3 月 27 日 23:30（UTC+8）\n版本代號：Stellar\n狀態：Pre-Alpha 測試版\n類型：APK（Android專用）",
       ),
       _buildPage(
-        title: "版本內容",
-        content: "這是首個 Pre-Alpha 測試版本，介面與功能尚在開發中，僅供預覽與測試，資料不穩定，功能未完整。",
+        title: "版本更新內容",
+        content: "1. 時間表優化，新增快速跳轉至其他月份功能\n2. 修復時間表月份資料點擊後下方介面顯示異常\n3. 在開啟動畫顯示情況下，可正常察看當日動畫\n4. 動畫詳細介面顯示方式調整，新增下方介面顯示後再跳轉\n5. 修復版本號顯示錯誤問題\n6. 主頁標題現在會自動依分頁變動\n7. 修復部分資料讀取異常 Bug\n8. 修復首次開啟 App 可跳過同意按鈕 Bug\n9. Git 新增上傳時自動 Build APK 功能",
       ),
       _buildPage(
         title: "目前功能與狀態",
@@ -42,26 +42,32 @@ class _IntroPageState extends State<IntroPage> {
       _buildFinalPage(),
     ];
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('ACG大全 App - 介紹')),
-      body: Column(
-        children: [
-          Expanded(
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: pages.length,
-              onPageChanged: (index) {
-                setState(() => _currentIndex = index);
-              },
-              itemBuilder: (context, index) => pages[index],
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('ACG大全 App - 介紹'),
+          automaticallyImplyLeading: false,
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: pages.length,
+                onPageChanged: (index) {
+                  setState(() => _currentIndex = index);
+                },
+                itemBuilder: (context, index) => pages[index],
+              ),
             ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(pages.length, (index) => _buildDot(index)),
-          ),
-          const SizedBox(height: 12),
-        ],
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(pages.length, (index) => _buildDot(index)),
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
       ),
     );
   }

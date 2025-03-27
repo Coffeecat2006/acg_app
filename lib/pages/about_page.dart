@@ -100,8 +100,8 @@ class AboutPage extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Text(
-                "1. 請保持網路連線穩定，以便及時取得最新資料。\n"
-                    "2. 收藏作品前，請確認作品資訊正確，避免重複收藏。\n"
+                    "1. 請保持網路連線穩定，以便及時取得最新資料。\n"
+                    "2. 當連線出問題時，確認自己網路沒問題後，可能是伺服器問題，可以至dc群聯絡管理員。\n"
                     "3. 如有任何建議或問題，歡迎透過問題與回報功能反饋給我們。",
                 style: TextStyle(fontSize: 16),
               ),

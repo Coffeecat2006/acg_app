@@ -371,7 +371,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   Row(
                     children: const [
                       Text('版本: '),
-                      Text('pre-alpha-v0.1.0', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text('pre-alpha-v0.1.1', style: TextStyle(fontWeight: FontWeight.bold)),
                     ],
                   ),
                   TextButton(

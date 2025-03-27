@@ -19,41 +19,128 @@
           "release_date": "2025-03-10",
           "episodes_count": 12,
           "episodes": [
-            { "episode_number": 1, "air_time": "2025-03-10T21:00:00" },
-            { "episode_number": 2, "air_time": "2025-03-17T21:00:00" },
-            { "episode_number": 3, "air_time": "2025-03-24T21:00:00" },
-            { "episode_number": 4, "air_time": "2025-03-30T21:00:00" },
-            { "episode_number": 5, "air_time": "2025-04-07T21:00:00" },
-            { "episode_number": 6, "air_time": "2025-04-14T21:00:00" },
-            { "episode_number": 7, "air_time": "2025-04-21T21:00:00" },
-            { "episode_number": 8, "air_time": "2025-04-28T21:00:00" },
-            { "episode_number": 9, "air_time": "2025-05-05T23:00:00" },
-            { "episode_number": 10, "air_time": "2025-05-12T24:00:00" },
-            { "episode_number": 11, "air_time": "2025-05-19T21:00:00" },
-            { "episode_number": 12, "air_time": "2025-05-26T21:00:00" }
-          ]
+            {
+              "episode_number": 1,
+              "air_time": "2025-03-10T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "1"
+            },
+            {
+              "episode_number": 2,
+              "air_time": "2025-03-17T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "2"
+            },
+            {
+              "episode_number": 3,
+              "air_time": "2025-03-24T21:00:00",
+              "isTimeUnknown": true,
+              "episode_label": "3"
+            },
+            {
+              "episode_number": 4,
+              "air_time": "2025-03-30T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "4"
+            },
+            {
+              "episode_number": 5,
+              "air_time": "2025-04-07T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "5"
+            },
+            {
+              "episode_number": 6,
+              "air_time": "2025-04-14T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "6"
+            },
+            {
+              "episode_number": 7,
+              "air_time": "2025-04-21T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "7"
+            },
+            {
+              "episode_number": 8,
+              "air_time": "2025-04-28T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "8"
+            },
+            {
+              "episode_number": 9,
+              "air_time": "2025-05-05T23:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "9"
+            },
+            {
+              "episode_number": 10,
+              "air_time": "2025-05-12T24:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "10"
+            },
+            {
+              "episode_number": 11,
+              "air_time": "2025-05-19T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "11"
+            },
+            {
+              "episode_number": 12,
+              "air_time": "2025-05-26T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "12"
+            }
+          ],
+          "release_date_unknown": false
         }
       ],
       "synopsis": "第一季動畫描述了主角面對種種挑戰的成長歷程。",
-      "main_staff": ["監督: XXX", "角色設計: YYY"],
+      "main_staff": [
+        "監督: XXX",
+        "角色設計: YYY"
+      ],
       "original": "原作：ZZZ",
       "cast": [
-        { "actor": "聲優A", "role": "角色A" },
-        { "actor": "聲優B", "role": "角色B" }
+        {
+          "actor": "聲優A",
+          "role": "角色A"
+        },
+        {
+          "actor": "聲優B",
+          "role": "角色B"
+        }
       ],
       "op_ed": [
-        { "type": "OP", "name": "OP Song", "link": "https://youtube.com/xxx" },
-        { "type": "ED", "name": "ED Song", "link": "https://youtube.com/yyy" }
+        {
+          "type": "OP",
+          "name": "OP Song",
+          "link": "https://youtube.com/xxx"
+        },
+        {
+          "type": "ED",
+          "name": "ED Song",
+          "link": "https://youtube.com/yyy"
+        }
       ],
       "watch_platforms": [
-        { "name": "平台1", "link": "https://xxx" },
-        { "name": "平台2", "link": "https://yyy" }
+        {
+          "name": "平台1",
+          "link": "https://xxx"
+        },
+        {
+          "name": "平台2",
+          "link": "https://yyy"
+        }
       ],
       "official_site": "https://anime-sample.com",
       "social_link": "https://twitter.com/anime-sample"
     },
     "version": "1.2.0",
-    "last_update": "2025-04-20"
+    "last_update": "2025-04-20",
+    "seasonal_info": [
+      "2025冬"
+    ]
   },
   {
     "id": "2025030002",
@@ -75,41 +162,128 @@
           "release_date": "2025-06-10",
           "episodes_count": 10,
           "episodes": [
-            { "episode_number": 1, "air_time": "2025-03-10T21:00:00" },
-            { "episode_number": 2, "air_time": "2025-03-17T21:00:00" },
-            { "episode_number": 3, "air_time": "2025-03-24T21:00:00" },
-            { "episode_number": 4, "air_time": "2025-03-30T21:00:00" },
-            { "episode_number": 5, "air_time": "2025-04-07T21:00:00" },
-            { "episode_number": 6, "air_time": "2025-04-14T21:00:00" },
-            { "episode_number": 7, "air_time": "2025-04-21T21:00:00" },
-            { "episode_number": 8, "air_time": "2025-04-28T21:00:00" },
-            { "episode_number": 9, "air_time": "2025-05-05T23:00:00" },
-            { "episode_number": 10, "air_time": "2025-05-12T24:00:00" },
-            { "episode_number": 11, "air_time": "2025-05-19T21:00:00" },
-            { "episode_number": 12, "air_time": "2025-05-26T21:00:00" }
-          ]
+            {
+              "episode_number": 1,
+              "air_time": "2025-03-10T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "1"
+            },
+            {
+              "episode_number": 2,
+              "air_time": "2025-03-17T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "2"
+            },
+            {
+              "episode_number": 3,
+              "air_time": "2025-03-24T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "3"
+            },
+            {
+              "episode_number": 4,
+              "air_time": "2025-03-30T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "4"
+            },
+            {
+              "episode_number": 5,
+              "air_time": "2025-04-07T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "5"
+            },
+            {
+              "episode_number": 6,
+              "air_time": "2025-04-14T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "6"
+            },
+            {
+              "episode_number": 7,
+              "air_time": "2025-04-21T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "7"
+            },
+            {
+              "episode_number": 8,
+              "air_time": "2025-04-28T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "8"
+            },
+            {
+              "episode_number": 9,
+              "air_time": "2025-05-05T23:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "9"
+            },
+            {
+              "episode_number": 10,
+              "air_time": "2025-05-12T24:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "10"
+            },
+            {
+              "episode_number": 11,
+              "air_time": "2025-05-19T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "11"
+            },
+            {
+              "episode_number": 12,
+              "air_time": "2025-05-26T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "12"
+            }
+          ],
+          "release_date_unknown": false
         }
       ],
       "synopsis": "第二季動畫展現了更深層的人物關係和劇情發展。",
-      "main_staff": ["監督: XXX", "角色設計: YYY"],
+      "main_staff": [
+        "監督: XXX",
+        "角色設計: YYY"
+      ],
       "original": "原作：ZZZ",
       "cast": [
-        { "actor": "聲優A", "role": "角色A" },
-        { "actor": "聲優C", "role": "角色C" }
+        {
+          "actor": "聲優A",
+          "role": "角色A"
+        },
+        {
+          "actor": "聲優C",
+          "role": "角色C"
+        }
       ],
       "op_ed": [
-        { "type": "OP", "name": "OP Song 2", "link": "https://youtube.com/xxx2" },
-        { "type": "ED", "name": "ED Song 2", "link": "https://youtube.com/yyy2" }
+        {
+          "type": "OP",
+          "name": "OP Song 2",
+          "link": "https://youtube.com/xxx2"
+        },
+        {
+          "type": "ED",
+          "name": "ED Song 2",
+          "link": "https://youtube.com/yyy2"
+        }
       ],
       "watch_platforms": [
-        { "name": "平台1", "link": "https://xxx2" },
-        { "name": "平台2", "link": "https://yyy2" }
+        {
+          "name": "平台1",
+          "link": "https://xxx2"
+        },
+        {
+          "name": "平台2",
+          "link": "https://yyy2"
+        }
       ],
       "official_site": "https://anime-sample.com",
       "social_link": "https://twitter.com/anime-sample"
     },
     "version": "1.2.0",
-    "last_update": "2025-04-20"
+    "last_update": "2025-04-20",
+    "seasonal_info": [
+      "2025春"
+    ]
   },
   {
     "id": "2025030003",
@@ -131,41 +305,128 @@
           "release_date": "2025-03-10",
           "episodes_count": 13,
           "episodes": [
-            { "episode_number": 1, "air_time": "2025-03-10T21:00:00" },
-            { "episode_number": 2, "air_time": "2025-03-17T21:00:00" },
-            { "episode_number": 3, "air_time": "2025-03-24T21:00:00" },
-            { "episode_number": 4, "air_time": "2025-03-30T21:00:00" },
-            { "episode_number": 5, "air_time": "2025-04-07T21:00:00" },
-            { "episode_number": 6, "air_time": "2025-04-14T21:00:00" },
-            { "episode_number": 7, "air_time": "2025-04-21T21:00:00" },
-            { "episode_number": 8, "air_time": "2025-04-28T21:00:00" },
-            { "episode_number": 9, "air_time": "2025-05-05T23:00:00" },
-            { "episode_number": 10, "air_time": "2025-05-12T24:00:00" },
-            { "episode_number": 11, "air_time": "2025-05-19T21:00:00" },
-            { "episode_number": 12, "air_time": "2025-05-26T21:00:00" }
-          ]
+            {
+              "episode_number": 1,
+              "air_time": "2025-03-10T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "1"
+            },
+            {
+              "episode_number": 2,
+              "air_time": "2025-03-17T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "2"
+            },
+            {
+              "episode_number": 3,
+              "air_time": "2025-03-24T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "3"
+            },
+            {
+              "episode_number": 4,
+              "air_time": "2025-03-30T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "4"
+            },
+            {
+              "episode_number": 5,
+              "air_time": "2025-04-07T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "5"
+            },
+            {
+              "episode_number": 6,
+              "air_time": "2025-04-14T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "6"
+            },
+            {
+              "episode_number": 7,
+              "air_time": "2025-04-21T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "7"
+            },
+            {
+              "episode_number": 8,
+              "air_time": "2025-04-28T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "8"
+            },
+            {
+              "episode_number": 9,
+              "air_time": "2025-05-05T23:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "9"
+            },
+            {
+              "episode_number": 10,
+              "air_time": "2025-05-12T24:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "10"
+            },
+            {
+              "episode_number": 11,
+              "air_time": "2025-05-19T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "11"
+            },
+            {
+              "episode_number": 12,
+              "air_time": "2025-05-26T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "12"
+            }
+          ],
+          "release_date_unknown": false
         }
       ],
       "synopsis": "本動畫講述了主角與敵對勢力的激烈對抗與友情。",
-      "main_staff": ["監督: ABC", "角色設計: DEF"],
+      "main_staff": [
+        "監督: ABC",
+        "角色設計: DEF"
+      ],
       "original": "原作：GHI",
       "cast": [
-        { "actor": "聲優D", "role": "角色D" },
-        { "actor": "聲優E", "role": "角色E" }
+        {
+          "actor": "聲優D",
+          "role": "角色D"
+        },
+        {
+          "actor": "聲優E",
+          "role": "角色E"
+        }
       ],
       "op_ed": [
-        { "type": "OP", "name": "OP Song 3", "link": "https://youtube.com/xxx3" },
-        { "type": "ED", "name": "ED Song 3", "link": "https://youtube.com/yyy3" }
+        {
+          "type": "OP",
+          "name": "OP Song 3",
+          "link": "https://youtube.com/xxx3"
+        },
+        {
+          "type": "ED",
+          "name": "ED Song 3",
+          "link": "https://youtube.com/yyy3"
+        }
       ],
       "watch_platforms": [
-        { "name": "平台3", "link": "https://xxx3" },
-        { "name": "平台4", "link": "https://yyy3" }
+        {
+          "name": "平台3",
+          "link": "https://xxx3"
+        },
+        {
+          "name": "平台4",
+          "link": "https://yyy3"
+        }
       ],
       "official_site": "https://anime-pierrot.com",
       "social_link": "https://twitter.com/anime-pierrot"
     },
     "version": "1.2.0",
-    "last_update": "2025-04-20"
+    "last_update": "2025-04-20",
+    "seasonal_info": [
+      "2025冬"
+    ]
   },
   {
     "id": "2025030004",
@@ -187,40 +448,127 @@
           "release_date": "2025-03-10",
           "episodes_count": 12,
           "episodes": [
-            { "episode_number": 1, "air_time": "2025-03-10T21:00:00" },
-            { "episode_number": 2, "air_time": "2025-03-17T21:00:00" },
-            { "episode_number": 3, "air_time": "2025-03-24T21:00:00" },
-            { "episode_number": 4, "air_time": "2025-03-30T21:00:00" },
-            { "episode_number": 5, "air_time": "2025-04-07T21:00:00" },
-            { "episode_number": 6, "air_time": "2025-04-14T21:00:00" },
-            { "episode_number": 7, "air_time": "2025-04-21T21:00:00" },
-            { "episode_number": 8, "air_time": "2025-04-28T21:00:00" },
-            { "episode_number": 9, "air_time": "2025-05-05T23:00:00" },
-            { "episode_number": 10, "air_time": "2025-05-12T24:00:00" },
-            { "episode_number": 11, "air_time": "2025-05-19T21:00:00" },
-            { "episode_number": 12, "air_time": "2025-05-26T21:00:00" }
-          ]
+            {
+              "episode_number": 1,
+              "air_time": "2025-03-10T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "1"
+            },
+            {
+              "episode_number": 2,
+              "air_time": "2025-03-17T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "2"
+            },
+            {
+              "episode_number": 3,
+              "air_time": "2025-03-24T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "3"
+            },
+            {
+              "episode_number": 4,
+              "air_time": "2025-03-30T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "4"
+            },
+            {
+              "episode_number": 5,
+              "air_time": "2025-04-07T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "5"
+            },
+            {
+              "episode_number": 6,
+              "air_time": "2025-04-14T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "6"
+            },
+            {
+              "episode_number": 7,
+              "air_time": "2025-04-21T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "7"
+            },
+            {
+              "episode_number": 8,
+              "air_time": "2025-04-28T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "8"
+            },
+            {
+              "episode_number": 9,
+              "air_time": "2025-05-05T23:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "9"
+            },
+            {
+              "episode_number": 10,
+              "air_time": "2025-05-12T24:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "10"
+            },
+            {
+              "episode_number": 11,
+              "air_time": "2025-05-19T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "11"
+            },
+            {
+              "episode_number": 12,
+              "air_time": "2025-05-26T21:00:00",
+              "isTimeUnknown": false,
+              "episode_label": "12"
+            }
+          ],
+          "release_date_unknown": false
         }
       ],
       "synopsis": "本動畫講述了主角在音樂與友情中的奮鬥與成長。",
-      "main_staff": ["監督: JKL", "角色設計: MNO"],
+      "main_staff": [
+        "監督: JKL",
+        "角色設計: MNO"
+      ],
       "original": "原作：PQR",
       "cast": [
-        { "actor": "聲優F", "role": "角色F" },
-        { "actor": "聲優G", "role": "角色G" }
+        {
+          "actor": "聲優F",
+          "role": "角色F"
+        },
+        {
+          "actor": "聲優G",
+          "role": "角色G"
+        }
       ],
       "op_ed": [
-        { "type": "OP", "name": "OP Song 4", "link": "https://youtube.com/xxx4" },
-        { "type": "ED", "name": "ED Song 4", "link": "https://youtube.com/yyy4" }
+        {
+          "type": "OP",
+          "name": "OP Song 4",
+          "link": "https://youtube.com/xxx4"
+        },
+        {
+          "type": "ED",
+          "name": "ED Song 4",
+          "link": "https://youtube.com/yyy4"
+        }
       ],
       "watch_platforms": [
-        { "name": "平台5", "link": "https://xxx4" },
-        { "name": "平台6", "link": "https://yyy4" }
+        {
+          "name": "平台5",
+          "link": "https://xxx4"
+        },
+        {
+          "name": "平台6",
+          "link": "https://yyy4"
+        }
       ],
       "official_site": "https://anime-sample.com",
       "social_link": "https://twitter.com/anime-sample"
     },
     "version": "1.2.0",
-    "last_update": "2025-04-20"
+    "last_update": "2025-04-20",
+    "seasonal_info": [
+      "2025冬"
+    ]
   }
 ]
