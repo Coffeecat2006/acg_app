@@ -241,15 +241,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                         for (String favKey in _selectedFavKeys) {
                           final parts = favKey.split('_');
                           if (parts.length == 2) {
-                            Map<String, dynamic> updateRecord = {
-                              "id": parts[0],
-                              "type": parts[1],
-                              "title": "",
-                              "release_date": "",
-                              "fav_date": DateTime.now().toIso8601String(),
-                              "tags": tagStr,
-                            };
-                            await FavoritesDatabaseHelper.instance.insertFavorite(updateRecord);
+                            await FavoritesDatabaseHelper.instance.updateFavoriteTags(parts[0], parts[1], tagStr);
                           }
                         }
                         Navigator.pop(ctx);

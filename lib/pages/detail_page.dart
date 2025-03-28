@@ -16,7 +16,6 @@ class DetailPage extends StatefulWidget {
 }
 
 class _DetailPageState extends State<DetailPage> {
-  // For each media type, maintain a list (one bool per version) indicating whether that version is "favorited"
   Map<String, List<bool>> _favoriteStatus = {
     "anime": [],
     "novel": [],
@@ -29,7 +28,6 @@ class _DetailPageState extends State<DetailPage> {
     _initAllFavoriteStatus();
   }
 
-  // Initialize the favorite status for each version of each media type
   Future<void> _initAllFavoriteStatus() async {
     for (String type in ["anime", "novel", "comics"]) {
       final dynamic mediaList = widget.work[type];
@@ -55,8 +53,6 @@ class _DetailPageState extends State<DetailPage> {
     }
   }
 
-  // Toggle favorite for a given media type and version index.
-  // Instead of deleting the record on "unfavorite", we update is_favorite to 0 so that tag data is preserved.
   Future<void> _toggleFavorite(String type, int index) async {
     final dynamic mediaList = widget.work[type];
     if (mediaList is! List || index < 0 || index >= mediaList.length) return;
@@ -66,16 +62,17 @@ class _DetailPageState extends State<DetailPage> {
 
     bool currentStatus = await FavoritesDatabaseHelper.instance.isFavorite(mediaId, type);
     if (currentStatus) {
-      // Update record to set is_favorite to 0
       await FavoritesDatabaseHelper.instance.updateFavoriteStatus(mediaId, type, 0);
       setState(() {
         _favoriteStatus[type]![index] = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("已取消收藏 ${widget.work['title']}"), duration: Duration(milliseconds: 800)),
+        SnackBar(
+          content: Text("已取消收藏 ${widget.work['title']}"),
+          duration: const Duration(milliseconds: 800),
+        ),
       );
     } else {
-      // Insert (or update) record with is_favorite set to 1.
       Map<String, dynamic> record = {
         "id": mediaId,
         "title": widget.work["title"] ?? "",
@@ -89,12 +86,14 @@ class _DetailPageState extends State<DetailPage> {
         _favoriteStatus[type]![index] = true;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("已加入收藏 ${widget.work['title']}"), duration: Duration(milliseconds: 800)),
+        SnackBar(
+          content: Text("已加入收藏 ${widget.work['title']}"),
+          duration: const Duration(milliseconds: 800),
+        ),
       );
     }
   }
 
-  // Show tag dialog (allows adding and deleting tags) – available regardless of favorite status.
   void _showTagDialog(String type, int index) async {
     final dynamic mediaList = widget.work[type];
     if (mediaList is! List || index < 0 || index >= mediaList.length) return;
@@ -102,7 +101,6 @@ class _DetailPageState extends State<DetailPage> {
     final String? mediaId = version["id"] is String ? version["id"] : null;
     if (mediaId == null) return;
 
-    // 先從資料庫中獲取該作品的最新標籤
     final allFavorites = await FavoritesDatabaseHelper.instance.getAllFavorites();
     final favKey = "${mediaId}_$type";
     final currentFav = allFavorites.firstWhere(
@@ -110,13 +108,11 @@ class _DetailPageState extends State<DetailPage> {
       orElse: () => {},
     );
 
-    // 若有標籤，則用資料庫的標籤，否則空的Set
     Set<String> tempSelectedTags = {};
     if (currentFav.isNotEmpty && currentFav["tags"] != null) {
       tempSelectedTags = currentFav["tags"].split(",").toSet();
     }
 
-    // 從資料庫讀取所有可用標籤
     List<Map<String, dynamic>> tagRecords = await FavoritesDatabaseHelper.instance.getTags();
     List<String> availableTags = tagRecords.map((e) => e['tag'] as String).toList();
 
@@ -142,26 +138,26 @@ class _DetailPageState extends State<DetailPage> {
                     Row(
                       children: [
                         IconButton(
-                          icon: Icon(Icons.info_outline),
+                          icon: const Icon(Icons.info_outline),
                           onPressed: () {
                             Navigator.pop(ctx);
                             Navigator.push(context, MaterialPageRoute(builder: (_) => AboutPage()));
                           },
                         ),
                         IconButton(
-                          icon: Icon(Icons.settings),
+                          icon: const Icon(Icons.settings),
                           onPressed: () {
                             Navigator.pop(ctx);
                             Navigator.push(context, MaterialPageRoute(builder: (_) => TagManagementPage()));
                           },
                         ),
-                        Spacer(),
-                        Text("標籤設定", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        const Spacer(),
+                        const Text("標籤設定", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       ],
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     availableTags.isEmpty
-                        ? Text("尚無可用標籤")
+                        ? const Text("尚無可用標籤")
                         : Wrap(
                       spacing: 8,
                       children: availableTags.map((tag) {
@@ -181,13 +177,13 @@ class _DetailPageState extends State<DetailPage> {
                         );
                       }).toList(),
                     ),
-                    Divider(),
+                    const Divider(),
                     TextField(
                       controller: tagController,
                       decoration: InputDecoration(
                         labelText: "新增標籤 (或搜尋已有標籤)",
                         suffixIcon: IconButton(
-                          icon: Icon(Icons.add),
+                          icon: const Icon(Icons.add),
                           onPressed: () async {
                             String newTag = tagController.text.trim();
                             if (newTag.isNotEmpty && !availableTags.contains(newTag)) {
@@ -200,10 +196,10 @@ class _DetailPageState extends State<DetailPage> {
                             }
                           },
                         ),
-                        border: OutlineInputBorder(),
+                        border: const OutlineInputBorder(),
                       ),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Center(
                       child: ElevatedButton(
                         onPressed: () async {
@@ -222,7 +218,7 @@ class _DetailPageState extends State<DetailPage> {
                           });
                           Navigator.pop(ctx);
                         },
-                        child: Text("儲存標籤"),
+                        child: const Text("儲存標籤"),
                       ),
                     ),
                   ],
@@ -235,18 +231,16 @@ class _DetailPageState extends State<DetailPage> {
     );
   }
 
-
-  // Build a section for a specific media type (all versions displayed as individual cards)
   Widget _buildMediaSection(BuildContext context, String mediaType, String typeKey) {
     final dynamic mediaList = widget.work[typeKey];
     if (mediaList is! List || mediaList.isEmpty) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("$mediaType 版本", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        SizedBox(height: 8),
+        Text("$mediaType 版本", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
         Column(
           children: List.generate(mediaList.length, (index) {
             final version = mediaList[index];
@@ -257,20 +251,22 @@ class _DetailPageState extends State<DetailPage> {
               isFav = statusList[index];
             }
             return Card(
-              margin: EdgeInsets.symmetric(vertical: 4),
+              margin: const EdgeInsets.symmetric(vertical: 4),
               child: Padding(
-                padding: EdgeInsets.all(8),
+                padding: const EdgeInsets.all(8),
                 child: Row(
                   children: [
-                    Text(label, style: TextStyle(fontSize: 16)),
-                    Spacer(),
+                    Text(label, style: const TextStyle(fontSize: 16)),
+                    const Spacer(),
                     IconButton(
-                      icon: Icon(isFav ? Icons.star : Icons.star_border),
-                      color: isFav ? Colors.yellow : Colors.grey,
+                      icon: Icon(
+                        isFav ? Icons.star : Icons.star_border,
+                        color: isFav ? Colors.yellow : Colors.grey,
+                      ),
                       onPressed: () => _toggleFavorite(typeKey, index),
                     ),
                     IconButton(
-                      icon: Icon(Icons.label_outline),
+                      icon: const Icon(Icons.label_outline),
                       onPressed: () => _showTagDialog(typeKey, index),
                     ),
                     ElevatedButton(
@@ -287,7 +283,7 @@ class _DetailPageState extends State<DetailPage> {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => ComicsDetailPage(work: selectedWork)));
                         }
                       },
-                      child: Text("查看更多"),
+                      child: const Text("查看更多"),
                     ),
                   ],
                 ),
@@ -295,66 +291,14 @@ class _DetailPageState extends State<DetailPage> {
             );
           }),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
       ],
     );
   }
 
-  Widget _buildSectionTitle(String title) => Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold));
-  Widget _buildSectionContent(String content) => Text(content, style: TextStyle(fontSize: 16));
-  Widget _buildDivider() => Divider(color: Colors.grey, thickness: 1, height: 32);
-
-  Widget _buildSeasonsInfo(List seasons) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: seasons.map<Widget>((season) {
-        return Padding(
-          padding: EdgeInsets.symmetric(vertical: 4),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("季數：${season['season_number']}", style: TextStyle(fontWeight: FontWeight.bold)),
-              Text("宣告製作日期：${season['production_announcement_date'] ?? '---'}"),
-              Text("發布日期：${season['release_date'] ?? '---'}"),
-              Text("總集數：${season['episodes_count'] ?? '---'}"),
-              SizedBox(height: 4),
-              if (season['episodes'] != null)
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: List<Widget>.from((season['episodes'] as List).map((ep) {
-                    final epNum = ep['episode_number'];
-                    final airTime = ep['air_time'];
-                    return Chip(
-                      label: Text("Ep $epNum\n$airTime", textAlign: TextAlign.center),
-                    );
-                  })),
-                ),
-            ],
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildListSection(String title, List list) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle(title),
-        SizedBox(height: 4),
-        ...list.map<Widget>((item) {
-          if (item is Map) {
-            final name = item['name'] ?? '';
-            final link = item['link'] ?? '';
-            return Text("$name ($link)", style: TextStyle(fontSize: 16));
-          } else {
-            return Text(item.toString(), style: TextStyle(fontSize: 16));
-          }
-        }).toList(),
-      ],
-    );
-  }
+  Widget _buildSectionTitle(String title) => Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold));
+  Widget _buildSectionContent(String content) => Text(content, style: const TextStyle(fontSize: 16));
+  Widget _buildDivider() => const Divider(color: Colors.grey, thickness: 1, height: 32);
 
   @override
   Widget build(BuildContext context) {
@@ -363,14 +307,16 @@ class _DetailPageState extends State<DetailPage> {
     final String coverUrl = (widget.work['cover_image'] != null && widget.work['cover_image']['remote'] != null)
         ? widget.work['cover_image']['remote']
         : '';
-    final String synopsis = widget.work['synopsis'] ?? '暫無簡介';
+    final String synopsis = widget.work['Introduction'] ?? '暫無簡介';
+    final List<dynamic> categoryTags = widget.work['category_tags'] ?? [];
+    final String news = widget.work['news'] ?? '';
 
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -379,16 +325,26 @@ class _DetailPageState extends State<DetailPage> {
                 : Container(
               height: 200,
               color: Colors.grey[300],
-              child: Center(child: Text('無封面圖')),
+              child: const Center(child: Text('無封面圖')),
             ),
-            SizedBox(height: 16),
-            Text(title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            Text(title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             if (titleJp.isNotEmpty)
-              Text(titleJp, style: TextStyle(fontSize: 18, color: Colors.grey)),
-            SizedBox(height: 16),
+              Text(titleJp, style: const TextStyle(fontSize: 18, color: Colors.grey)),
+            const SizedBox(height: 16),
             Text(synopsis),
-            SizedBox(height: 24),
-            // Display media sections
+            const SizedBox(height: 16),
+            if (categoryTags.isNotEmpty)
+              Wrap(
+                spacing: 8,
+                children: categoryTags.map((tag) => Chip(label: Text(tag.toString()))).toList(),
+              ),
+            if (news.trim().isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text("最新消息: $news", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+            const SizedBox(height: 24),
             _buildMediaSection(context, "動畫", "anime"),
             _buildMediaSection(context, "輕小說", "novel"),
             _buildMediaSection(context, "漫畫", "comics"),

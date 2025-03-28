@@ -24,12 +24,12 @@ class _IntroPageState extends State<IntroPage> {
   Widget build(BuildContext context) {
     final pages = [
       _buildPage(
-        title: "ACG大全 App - Pre-Alpha v0.1.1",
-        content: "發布時間：2025 年 3 月 27 日 23:30（UTC+8）\n版本代號：Stellar\n狀態：Pre-Alpha 測試版\n類型：APK（Android專用）",
+        title: "ACG大全 App - Pre-Alpha v0.1.2",
+        content: "發布時間：2025 年 3 月 28 日 16:30（UTC+8）\n版本代號：Nova\n狀態：Pre-Alpha 測試版\n類型：APK（Android專用）",
       ),
       _buildPage(
-        title: "版本更新內容",
-        content: "1. 時間表優化，新增快速跳轉至其他月份功能\n2. 修復時間表月份資料點擊後下方介面顯示異常\n3. 在開啟動畫顯示情況下，可正常察看當日動畫\n4. 動畫詳細介面顯示方式調整，新增下方介面顯示後再跳轉\n5. 修復版本號顯示錯誤問題\n6. 主頁標題現在會自動依分頁變動\n7. 修復部分資料讀取異常 Bug\n8. 修復首次開啟 App 可跳過同意按鈕 Bug\n9. Git 新增上傳時自動 Build APK 功能",
+          title: "版本更新內容",
+          content: "Bug修復：\n1. 收藏介面的作品使用一鍵附加標籤會出現標題遺失情況，已修復\n2. 作品詳細介面內收藏狀態顯示異常，已修復\n3. GitHub 自動 build apk 出現問題，已修復\n4. 作品介面簡介部正常顯示，已修復\n5. 優化部分介面（作品詳細介面）載入\n\n功能更新：\n1. 新增動畫串流平台整理介面\n2. 新增作品分類標籤\n3. 更新關於頁面"
       ),
       _buildPage(
         title: "目前功能與狀態",

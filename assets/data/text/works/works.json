@@ -7,6 +7,8 @@
       "title": "敗北女角太多了",
       "title_jp": "負けヒロインが多すぎる",
       "category_tags": ["青春", "校園", "戀愛"],
+      "Introduction": "Introduction",
+      "news": "",
       "anime": [
         { "id": "2025030001", "label": "第1季" },
         { "id": "2025030002", "label": "第2季" }
@@ -14,13 +16,16 @@
       "novel": [
         { "id": "2025010001", "label": "正篇" }
       ],
-      "comics": []
+      "comics": [],
+      "others": []
     },
     {
       "id": "W0002",
       "title": "死神 千年血戰篇",
       "title_jp": "BLEACH 千年血戦篇",
       "category_tags": ["test1", "test2", "test3"],
+      "Introduction": "Introduction",
+      "news": "",
       "anime": [
         { "id": "2025030003", "label": "第1季" }
       ],
@@ -28,13 +33,16 @@
       "comics": [
         { "id": "2025020001", "label": "正篇" },
         { "id": "2025020002", "label": "番外篇" }
-      ]
+      ],
+      "others": []
     },
     {
       "id": "W0003",
       "title": "BanG Dream! Ave Mujica",
       "title_jp": "BanG Dream! Ave Mujica",
       "category_tags": ["樂團", "test1", "test2"],
+      "Introduction": "Introduction",
+      "news": "",
       "anime": [
         { "id": "2025030004", "label": "第1季" }
       ],
@@ -44,7 +52,8 @@
       ],
       "comics": [
         { "id": "2025020003", "label": "正篇" }
-      ]
+      ],
+      "others": []
     }
   ]
 }

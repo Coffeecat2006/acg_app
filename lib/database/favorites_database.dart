@@ -7,6 +7,17 @@ class FavoritesDatabaseHelper {
 
   FavoritesDatabaseHelper._init();
 
+  Future<int> updateFavoriteTags(String id, String type, String newTags) async {
+    final db = await instance.database;
+    final String favKey = '${id}_$type';
+    return await db.update(
+      'favorites',
+      {'tags': newTags},
+      where: 'fav_key = ?',
+      whereArgs: [favKey],
+    );
+  }
+
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDB('favorites.db');
@@ -25,7 +36,6 @@ class FavoritesDatabaseHelper {
   }
 
   Future _createDB(Database db, int version) async {
-    // 建立 favorites 表，使用 fav_key 作為主鍵（組合 id 與 type）
     await db.execute('''
       CREATE TABLE favorites (
         fav_key TEXT PRIMARY KEY,
@@ -39,14 +49,12 @@ class FavoritesDatabaseHelper {
       )
     ''');
 
-    // 建立 tags 表，單一欄位作為主鍵
     await db.execute('''
       CREATE TABLE tags (
         tag TEXT NOT NULL PRIMARY KEY
       )
     ''');
 
-    // 插入預設標籤
     await db.insert('tags', {'tag': '⭐ 待觀看'});
     await db.insert('tags', {'tag': '✔️ 已觀看'});
   }
@@ -54,10 +62,8 @@ class FavoritesDatabaseHelper {
   // Favorites 表操作
   Future<int> insertFavorite(Map<String, dynamic> favorite) async {
     final db = await instance.database;
-    // 生成組合鍵：id 與 type
     final String favKey = '${favorite["id"]}_${favorite["type"]}';
     favorite["fav_key"] = favKey;
-    // 插入時設定 is_favorite 為 1
     favorite["is_favorite"] = 1;
     return await db.insert('favorites', favorite, conflictAlgorithm: ConflictAlgorithm.replace);
   }
@@ -72,7 +78,11 @@ class FavoritesDatabaseHelper {
   Future<bool> isFavorite(String id, String type) async {
     final db = await instance.database;
     final String favKey = '${id}_${type}';
-    final res = await db.query('favorites', where: 'fav_key = ?', whereArgs: [favKey]);
+    final res = await db.query(
+      'favorites',
+      where: 'fav_key = ? AND is_favorite = ?',
+      whereArgs: [favKey, 1],
+    );
     return res.isNotEmpty;
   }
 
@@ -81,7 +91,6 @@ class FavoritesDatabaseHelper {
     return await db.query('favorites');
   }
 
-  // Tags 表操作
   Future<List<Map<String, dynamic>>> getTags() async {
     final db = await instance.database;
     return await db.query('tags');

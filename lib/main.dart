@@ -14,6 +14,7 @@ import 'pages/about_page.dart';
 import 'pages/tag_management_page.dart';
 import 'pages/feedback_page.dart';
 import 'pages/intro_page.dart';
+import 'pages/streaming_platform_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -164,11 +165,14 @@ class _MainScreenState extends State<MainScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text('用戶'),
+              leading: const Icon(Icons.movie),
+              title: const Text('動畫串流平台'),
               onTap: () {
                 Navigator.pop(context);
-                setState(() => _selectedIndex = 4);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => StreamingPlatformPage()),
+                );
               },
             ),
             ListTile(

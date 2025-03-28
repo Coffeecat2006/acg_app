@@ -4,7 +4,7 @@ description: "一個查詢acg資料的app"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 
-version: 0.1.1+2
+version: 0.1.2+3
 
 environment:
   sdk: ^3.7.0
@@ -25,6 +25,7 @@ dependencies:
   flutter_launcher_icons: ^0.14.3
   file_selector: ^1.0.3
   shared_preferences: ^2.2.2
+  url_launcher: ^6.1.7
 
 dev_dependencies:
   flutter_test:
