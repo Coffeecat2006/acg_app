@@ -7,24 +7,54 @@
       "local": "data/picture/2025010001.jpg",
       "remote": "https://cdn.example.com/images/2025010001.jpg"
     },
-    "details": {
-      "type": "novel",
-      "author": "作者 A",
-      "illustrator": "插畫家 B",
-      "publish_date_tw": "2025-01-10",
-      "publish_date_jp": "2024-12-25",
-      "synopsis": "本輕小說描述了一位冒險者如何在異世界中成長與奮鬥。",
-      "cover_image": "https://cdn.example.com/images/2025010001.jpg",
-      "publisher": "出版社 X",
-      "purchase_physical": [
-        { "platform_name": "博客來", "link": "https://www.books.com.tw/novel1" }
-      ],
-      "purchase_ebook": [
-        { "platform_name": "Kindle", "link": "https://amazon.com/novel1" }
-      ],
-      "official_site": "https://novel-sample.com",
-      "social_link": "https://twitter.com/novel-sample"
-    },
+    "books": [
+      {
+        "type": "novel",
+        "author": "作者 A",
+        "illustrator": "插畫家 B",
+        "publish_date_tw": "2025-01-10",
+        "publish_date_jp": "2024-12-25",
+        "grading": "1",
+        "pricing": [
+          { "region": "TW", "amount": 200, "currency": "TWD" },
+          { "region": "JP", "amount": 840, "currency": "JPY" }
+        ],
+        "synopsis": "本輕小說描述了一位冒險者如何在異世界中成長與奮鬥。",
+        "cover_image": "https://cdn.example.com/images/2025010001.jpg",
+        "publisher": "出版社 X",
+        "purchase_physical": [
+          { "platform_name": "博客來", "link": "https://www.books.com.tw/novel1" }
+        ],
+        "purchase_ebook": [
+          { "platform_name": "Kindle", "link": "https://amazon.com/novel1" }
+        ],
+        "official_site": "https://novel-sample.com",
+        "social_link": "https://twitter.com/novel-sample"
+      },
+      {
+        "type": "novel",
+        "author": "作者 A",
+        "illustrator": "插畫家 B",
+        "publish_date_tw": "2025-01-10",
+        "publish_date_jp": "2024-12-25",
+        "grading": "2",
+        "pricing": [
+          { "region": "TW", "amount": 200, "currency": "TWD" },
+          { "region": "JP", "amount": 840, "currency": "JPY" }
+        ],
+        "synopsis": "本輕小說描述了一位冒險者如何在異世界中成長與奮鬥。",
+        "cover_image": "https://cdn.example.com/images/2025010001.jpg",
+        "publisher": "出版社 X",
+        "purchase_physical": [
+          { "platform_name": "博客來", "link": "https://www.books.com.tw/novel1" }
+        ],
+        "purchase_ebook": [
+          { "platform_name": "Kindle", "link": "https://amazon.com/novel1" }
+        ],
+        "official_site": "https://novel-sample.com",
+        "social_link": "https://twitter.com/novel-sample"
+      }
+    ],
     "version": "1.2.0",
     "last_update": "2025-04-20"
   },
@@ -36,24 +66,31 @@
       "local": "data/picture/2025010002.jpg",
       "remote": "https://cdn.example.com/images/2025010002.jpg"
     },
-    "details": {
-      "type": "novel",
-      "author": "作者 C",
-      "illustrator": "插畫家 D",
-      "publish_date_tw": "2025-01-20",
-      "publish_date_jp": "2024-12-30",
-      "synopsis": "本輕小說講述了一個關於音樂與友情的冒險故事。",
-      "cover_image": "https://cdn.example.com/images/2025010002.jpg",
-      "publisher": "出版社 Y",
-      "purchase_physical": [
-        { "platform_name": "博客來", "link": "https://www.books.com.tw/novel2" }
-      ],
-      "purchase_ebook": [
-        { "platform_name": "Kindle", "link": "https://amazon.com/novel2" }
-      ],
-      "official_site": "https://novel-sample.com",
-      "social_link": "https://facebook.com/novel-sample"
-    },
+    "books": [
+      {
+        "type": "novel",
+        "author": "作者 C",
+        "illustrator": "插畫家 D",
+        "publish_date_tw": "2025-01-20",
+        "publish_date_jp": "2024-12-30",
+        "grading": "1",
+        "pricing": [
+          { "region": "TW", "amount": 200, "currency": "TWD" },
+          { "region": "JP", "amount": 840, "currency": "JPY" }
+        ],
+        "synopsis": "本輕小說講述了一個關於音樂與友情的冒險故事。",
+        "cover_image": "https://cdn.example.com/images/2025010002.jpg",
+        "publisher": "出版社 Y",
+        "purchase_physical": [
+          { "platform_name": "博客來", "link": "https://www.books.com.tw/novel2" }
+        ],
+        "purchase_ebook": [
+          { "platform_name": "Kindle", "link": "https://amazon.com/novel2" }
+        ],
+        "official_site": "https://novel-sample.com",
+        "social_link": "https://facebook.com/novel-sample"
+      }
+    ],
     "version": "1.2.0",
     "last_update": "2025-04-20"
   },
@@ -65,24 +102,31 @@
       "local": "data/picture/2025010003.jpg",
       "remote": "https://cdn.example.com/images/2025010003.jpg"
     },
-    "details": {
-      "type": "novel",
-      "author": "作者 C",
-      "illustrator": "插畫家 D",
-      "publish_date_tw": "2025-01-25",
-      "publish_date_jp": "2024-12-31",
-      "synopsis": "這是 BanG Dream! 的第二版輕小說，講述了更多精彩的故事情節。",
-      "cover_image": "https://cdn.example.com/images/2025010003.jpg",
-      "publisher": "出版社 Y",
-      "purchase_physical": [
-        { "platform_name": "博客來", "link": "https://www.books.com.tw/novel3" }
-      ],
-      "purchase_ebook": [
-        { "platform_name": "Kindle", "link": "https://amazon.com/novel3" }
-      ],
-      "official_site": "https://novel-sample.com",
-      "social_link": "https://facebook.com/novel-sample"
-    },
+    "books": [
+      {
+        "type": "novel",
+        "author": "作者 C",
+        "illustrator": "插畫家 D",
+        "publish_date_tw": "2025-01-25",
+        "publish_date_jp": "2024-12-31",
+        "grading": "1",
+        "pricing": [
+          { "region": "TW", "amount": 200, "currency": "TWD" },
+          { "region": "JP", "amount": 840, "currency": "JPY" }
+        ],
+        "synopsis": "這是 BanG Dream! 的第二版輕小說，講述了更多精彩的故事情節。",
+        "cover_image": "https://cdn.example.com/images/2025010003.jpg",
+        "publisher": "出版社 Y",
+        "purchase_physical": [
+          { "platform_name": "博客來", "link": "https://www.books.com.tw/novel3" }
+        ],
+        "purchase_ebook": [
+          { "platform_name": "Kindle", "link": "https://amazon.com/novel3" }
+        ],
+        "official_site": "https://novel-sample.com",
+        "social_link": "https://facebook.com/novel-sample"
+      }
+    ],
     "version": "1.2.0",
     "last_update": "2025-04-20"
   }

@@ -12,6 +12,7 @@
       "studio": "Studio ABC",
       "publisher": "代理商 A",
       "announcement_date": "2025-03-01",
+      "grading": "6",
       "seasons": [
         {
           "season_number": 1,
@@ -155,6 +156,7 @@
       "studio": "Studio ABC",
       "publisher": "代理商 A",
       "announcement_date": "2025-06-01",
+      "grading": "6",
       "seasons": [
         {
           "season_number": 2,
@@ -298,6 +300,7 @@
       "studio": "Studio Pierrot",
       "publisher": "代理商 B",
       "announcement_date": "2025-03-01",
+      "grading": "6",
       "seasons": [
         {
           "season_number": 1,
@@ -441,6 +444,7 @@
       "studio": "Sample Studio",
       "publisher": "代理商 C",
       "announcement_date": "2025-03-01",
+      "grading": "0",
       "seasons": [
         {
           "season_number": 1,

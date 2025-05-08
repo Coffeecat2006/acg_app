@@ -237,6 +237,17 @@ class AboutPage extends StatelessWidget {
                 fontWeight: FontWeight.w500),
           ),
         ),
+        const SizedBox(height: 8),
+        const Text('Buy me a coffee：'),
+        InkWell(
+          onTap: () => _launchUrl('https://buymeacoffee.com/thecoffeecatstudio'),
+          child: const Text(
+            'https://buymeacoffee.com/thecoffeecatstudio',
+            style: TextStyle(
+                decoration: TextDecoration.underline,
+                fontWeight: FontWeight.w500),
+          ),
+        ),
         const SizedBox(height: 24),
         const Center(
             child: Text('感謝您的支持，讓我們一起打造更完善的 ACG大全 App！')),

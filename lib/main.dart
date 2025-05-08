@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/home_page.dart';
@@ -15,6 +14,10 @@ import 'pages/tag_management_page.dart';
 import 'pages/feedback_page.dart';
 import 'pages/intro_page.dart';
 import 'pages/streaming_platform_page.dart';
+import 'database/work_database.dart';
+import 'services/data_install_dialog.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +44,10 @@ class _MyAppState extends State<MyApp> {
     final prefs = await SharedPreferences.getInstance();
     final themeString = prefs.getString('theme_mode') ?? 'system';
     setState(() {
-      _themeMode = _stringToThemeMode(themeString);
+      _themeMode = ThemeMode.values.firstWhere(
+            (e) => e.name == themeString,
+        orElse: () => ThemeMode.system,
+      );
     });
   }
   Future<void> _saveTheme() async {
@@ -50,27 +56,12 @@ class _MyAppState extends State<MyApp> {
   }
   void toggleTheme() {
     setState(() {
-      if (_themeMode == ThemeMode.light) {
-        _themeMode = ThemeMode.dark;
-      } else if (_themeMode == ThemeMode.dark) {
-        _themeMode = ThemeMode.light;
-      } else {
-        _themeMode = ThemeMode.dark;
-      }
+      _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+      _saveTheme();
     });
-    _saveTheme();
   }
   ThemeMode get themeMode => _themeMode;
-  ThemeMode _stringToThemeMode(String str) {
-    switch (str) {
-      case 'light':
-        return ThemeMode.light;
-      case 'dark':
-        return ThemeMode.dark;
-      default:
-        return ThemeMode.system;
-    }
-  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -91,16 +82,19 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final WorkDatabase db = WorkDatabase();
   int _selectedIndex = 0;
   List<Map<String, dynamic>> _works = [];
   final List<Widget> _pages = [];
   bool isDark = false;
   final List<String> _appBarTitles = ['ACG大全', '時間表', '排行榜', '收藏', '使用者'];
+
   @override
   void initState() {
     super.initState();
-    _loadWorks();
+    _checkDataInstalled();
     _checkAndShowIntroPage();
+    _loadWorks();  // 一開始就嘗試從資料庫載入
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final theme = MyApp.of(context)?.themeMode;
       setState(() {
@@ -110,6 +104,21 @@ class _MainScreenState extends State<MainScreen> {
       });
     });
   }
+
+  Future<void> _checkDataInstalled() async {
+    final prefs = await SharedPreferences.getInstance();
+    bool isInstalled = prefs.getBool('isDataInstalled') ?? false;
+    if (!isInstalled) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => DataInstallDialog(db: db),
+        ).then((_) => _loadWorks());  // 安裝完成後再重新載入
+      });
+    }
+  }
+
   Future<void> _checkAndShowIntroPage() async {
     final prefs = await SharedPreferences.getInstance();
     bool hasShownIntro = prefs.getBool('hasShownIntro') ?? false;
@@ -121,27 +130,46 @@ class _MainScreenState extends State<MainScreen> {
       );
     }
   }
-  Future<void> _loadWorks() async {
-    try {
-      final jsonString = await rootBundle.loadString('assets/data/text/works/works.json');
-      final data = json.decode(jsonString);
-      final worksList = (data['works'] as List).map((e) => e as Map<String, dynamic>).toList();
-      setState(() {
-        _works = worksList;
-        _pages
-          ..clear()
-          ..addAll([
-            HomePage(works: _works),
-            const SchedulePage(),
-            const RankingPage(),
-            const FavoritesPage(),
-            const UserPage(),
-          ]);
-      });
-    } catch (e) {
-      debugPrint("Error loading works.json: $e");
+
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      throw '無法開啟連結：$url';
     }
   }
+
+  Future<void> _loadWorks() async {
+    // 從資料庫讀取 works table
+    final records = await db.select(db.works).get();
+    final worksList = records.map((w) {
+      return {
+        'id': w.id,
+        'title': w.title,
+        'title_jp': w.titleJp,
+        'tags': json.decode(w.categoryTags ?? '[]'),
+        'introduction': w.introduction,
+        'news': w.news,
+        'anime': json.decode(w.animeList ?? '[]'),
+        'novel': json.decode(w.novelList ?? '[]'),
+        'comics': json.decode(w.comicsList ?? '[]'),
+        'others': json.decode(w.othersList ?? '[]'),
+      };
+    }).toList();
+
+    setState(() {
+      _works = worksList;
+      _pages
+        ..clear()
+        ..addAll([
+          HomePage(works: _works),
+          const SchedulePage(),
+          const RankingPage(),
+          const FavoritesPage(),
+          const UserPage(),
+        ]);
+    });
+  }
+
   void _onItemTapped(int index) {
     setState(() => _selectedIndex = index);
   }
@@ -188,7 +216,16 @@ class _MainScreenState extends State<MainScreen> {
             ListTile(
               leading: const Icon(Icons.share),
               title: const Text('分享應用'),
-              onTap: () => Navigator.pop(context),
+              onTap: () async {
+                Navigator.pop(context);
+                // 要分享的連結與文案
+                const shareLink = 'https://coffeecat2006.me/acg_app/';
+                const shareText = '''
+                我剛剛在使用「ACG大全」App，集合最新動畫／漫畫／小說等一手資訊，介面又好用！
+                快來一起探索 ACG 世界 👉 $shareLink
+                ''';
+                await Share.share(shareText, subject: '推薦你一個超好用的 ACG App');
+              },
             ),
             ListTile(
               leading: const Icon(Icons.update),
@@ -238,7 +275,10 @@ class _MainScreenState extends State<MainScreen> {
             ListTile(
               leading: const Icon(Icons.money),
               title: const Text('贊助應用開發'),
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context);
+                _launchUrl('https://buymeacoffee.com/thecoffeecatstudio');
+              },
             ),
             ListTile(
               leading: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
@@ -280,22 +320,14 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text(_appBarTitles[_selectedIndex]),
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () async {
-              final result = await showSearch<String>(
-                context: context,
-                delegate: WorksSearchDelegate(_works),
-              );
-            },
-          ),
-        ],
+          title: Text(_appBarTitles[0]),
+          leading: IconButton(icon: const Icon(Icons.menu), onPressed: () => _scaffoldKey.currentState?.openDrawer()),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () => showSearch(context: context, delegate: WorksSearchDelegate(_works)),
+            ),
+          ],
       ),
       drawer: _buildDrawer(),
       body: _pages[_selectedIndex],
