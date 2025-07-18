@@ -1,11 +1,12 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import 'anime_detail_page.dart';
 import 'novel_detail_page.dart';
 import 'comics_detail_page.dart';
+import '../database/work_database.dart';
+import 'package:drift/drift.dart' hide Column;
+import '../l10n/app_localizations.dart';
 
 class SchedulePage extends StatefulWidget {
   const SchedulePage({Key? key}) : super(key: key);
@@ -16,6 +17,7 @@ class SchedulePage extends StatefulWidget {
 
 class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late WorkDatabase _db; // Add single database instance
 
   final Map<int, List<AnimeEpisode>> _animeDataByYear = {};
   final Map<int, List<BookRelease>> _bookDataByYear = {};
@@ -29,8 +31,16 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _db = WorkDatabase(); // Initialize single database instance
     _loadAnimeForCurrentRange();
     _loadBooksForYears();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _db.close(); // Properly dispose database
+    super.dispose();
   }
 
   Future<void> _loadAnimeForCurrentRange() async {
@@ -39,27 +49,29 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
     for (var year in yearsToLoad) {
       if (_animeDataByYear.containsKey(year)) continue;
       try {
-        final jsonString = await rootBundle.loadString('assets/data/text/animate/${year}animate.json');
-        final List rawList = json.decode(jsonString);
+        // Use the single database instance
         List<AnimeEpisode> result = [];
-        for (var item in rawList) {
-          final animeId = item['id'] ?? '';
-          final title = item['title'] ?? '';
-          final details = item['details'] ?? {};
-          final seasonalList = item['seasonal_info'] as List? ?? [];
-          final seasonalInfo = seasonalList.join('、');
-          final seasons = details['seasons'] as List?;
-          if (seasons == null) continue;
-          for (var season in seasons) {
-            if (season['release_date_unknown'] == true) continue;
-            final episodes = season['episodes'] as List?;
-            if (episodes == null) continue;
-            for (var ep in episodes) {
-              final epNum = ep['episode_number'] ?? 0;
-              final epLabel = ep['episode_label'] ?? epNum.toString();
-              final airTimeStr = ep['air_time'] ?? '';
-              final airTime = DateTime.tryParse(airTimeStr);
-              final isTimeUnknown = ep['isTimeUnknown'] ?? false;
+        
+        // 更高效的查詢：先載入指定年份的集數，再取得相關的動畫和季數資料
+        final startDate = DateTime(year, 1, 1);
+        final endDate = DateTime(year, 12, 31, 23, 59, 59);
+        
+        // 查詢指定年份的集數
+        final episodesRows = await (_db.select(_db.episodes)
+              ..where((t) => t.airTime.isBetweenValues(startDate, endDate) | 
+                             t.airTime.isNull()))
+            .get();
+        
+        for (var episodeRow in episodesRows) {
+          final animeId = episodeRow.animeId;
+          final epNum = episodeRow.episodeNumber;
+          final epLabel = episodeRow.episodeLabel ?? epNum.toString();
+          final airTime = episodeRow.airTime;
+          final isTimeUnknown = episodeRow.isTimeUnknown;
+          
+          // 如果時間未知，跳過不在指定年份的資料
+          if (airTime != null && airTime.year != year) continue;
+          
               if (airTime != null || isTimeUnknown) {
                 DateTime displayTime;
                 if (isTimeUnknown && airTime != null) {
@@ -69,6 +81,25 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
                 } else {
                   continue;
                 }
+            
+            // 查詢動畫基本資料
+            final animeRow = await (_db.select(_db.anime)
+                  ..where((t) => t.id.equals(animeId)))
+                .getSingleOrNull();
+            
+            if (animeRow == null) continue;
+            
+            // 查詢季數資料
+            final seasonRow = await (_db.select(_db.seasons)
+                  ..where((t) => (t.animeId.equals(animeId)) & 
+                         (t.seasonNumber.equals(episodeRow.seasonNumber))))
+                .getSingleOrNull();
+            
+            if (seasonRow?.releaseDateUnknown == true) continue;
+            
+            final title = animeRow.title ?? '';
+            final seasonalInfo = animeRow.seasonalInfo ?? '';
+            
                 result.add(AnimeEpisode(
                   animeId,
                   title,
@@ -80,13 +111,13 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
                 ));
               }
             }
-          }
-        }
+        
         setState(() {
           _animeDataByYear[year] = result;
         });
       } catch (e) {
-        // ignore
+        // 載入動畫資料錯誤
+        print('載入動畫資料錯誤: $e');
       }
     }
   }
@@ -96,39 +127,56 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
     for (var year in years) {
       if (_bookDataByYear.containsKey(year)) continue;
       try {
-        final novelJson = await rootBundle.loadString('assets/data/text/novel/${year}novel.json');
-        final comicsJson = await rootBundle.loadString('assets/data/text/comics/${year}comics.json');
-        final List novelList = json.decode(novelJson);
-        final List comicsList = json.decode(comicsJson);
+        // Use the single database instance
         List<BookRelease> result = [];
 
-        for (var item in novelList) {
-          final novelId = item['id'];
-          final title = item['title'] ?? '???';
-          final details = item['details'];
-          if (details == null) continue;
-          final dateTw = DateTime.tryParse(details['publish_date_tw'] ?? '');
-          if (dateTw != null) {
+        // 載入小說資料
+        final novelRows = await _db.select(_db.novels).get();
+        
+        for (var novelRow in novelRows) {
+          final novelId = novelRow.id;
+          final title = novelRow.title ?? '???';
+          
+          // 查詢小說的詳細資料
+          final bookRows = await (_db.select(_db.novelBooks)
+                ..where((t) => t.novelId.equals(novelId)))
+              .get();
+          
+          for (var bookRow in bookRows) {
+            final dateTw = bookRow.publishDateTw;
+            final dateJp = bookRow.publishDateJp;
+            
+            if (dateTw != null && dateTw.year == year) {
             result.add(BookRelease('novel', novelId, title, dateTw, '台版', 'TW'));
           }
-          final dateJp = DateTime.tryParse(details['publish_date_jp'] ?? '');
-          if (dateJp != null) {
+            if (dateJp != null && dateJp.year == year) {
             result.add(BookRelease('novel', novelId, title, dateJp, '日版', 'JP'));
           }
         }
+        }
 
-        for (var item in comicsList) {
-          final comicsId = item['id'];
-          final title = item['title'] ?? '???';
-          final details = item['details'];
-          if (details == null) continue;
-          final dateTw = DateTime.tryParse(details['release_date_tw'] ?? '');
-          if (dateTw != null) {
+        // 載入漫畫資料
+        final comicsRows = await _db.select(_db.comics).get();
+
+        for (var comicsRow in comicsRows) {
+          final comicsId = comicsRow.id;
+          final title = comicsRow.title ?? '???';
+          
+          // 查詢漫畫的詳細資料
+          final bookRows = await (_db.select(_db.comicsBooks)
+                ..where((t) => t.comicsId.equals(comicsId)))
+              .get();
+          
+          for (var bookRow in bookRows) {
+            final dateTw = bookRow.releaseDateTw;
+            final dateJp = bookRow.releaseDateJp;
+            
+            if (dateTw != null && dateTw.year == year) {
             result.add(BookRelease('comics', comicsId, title, dateTw, '台版', 'TW'));
           }
-          final dateJp = DateTime.tryParse(details['release_date_jp'] ?? '');
-          if (dateJp != null) {
+            if (dateJp != null && dateJp.year == year) {
             result.add(BookRelease('comics', comicsId, title, dateJp, '日版', 'JP'));
+            }
           }
         }
 
@@ -136,7 +184,7 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
           _bookDataByYear[year] = result;
         });
       } catch (e) {
-        // ignore
+        print('載入書籍資料錯誤: $e');
       }
     }
   }
@@ -147,23 +195,25 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    
     return Scaffold(
       body: Column(
         children: [
           TabBar(
             controller: _tabController,
             labelColor: Colors.blue,
-            tabs: const [
-              Tab(text: '本季動畫'),
-              Tab(text: '本月書籍'),
+            tabs: [
+              Tab(text: localizations.thisSeasonAnime),
+              Tab(text: localizations.thisMonthBooks),
             ],
           ),
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildAnimeScheduleTab(),
-                _buildBookMonthly(),
+                _buildAnimeScheduleTab(localizations),
+                _buildBookMonthly(localizations),
               ],
             ),
           ),
@@ -172,7 +222,7 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildAnimeScheduleTab() {
+  Widget _buildAnimeScheduleTab(AppLocalizations localizations) {
     final now = DateTime.now();
     final currentMonday = now.subtract(Duration(days: now.weekday - 1));
     final targetMonday = currentMonday.add(Duration(days: 7 * weekOffset));
@@ -259,7 +309,15 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
           children: List.generate(7, (index) {
             final dayDate = targetMonday.add(Duration(days: index));
             final isSelected = selectedDayIndex == index;
-            final label = ['一','二','三','四','五','六','日'][index];
+            final label = [
+          localizations.scheduleMonday.substring(0, 1),
+          localizations.scheduleTuesday.substring(0, 1),
+          localizations.scheduleWednesday.substring(0, 1),
+          localizations.scheduleThursday.substring(0, 1),
+          localizations.scheduleFriday.substring(0, 1),
+          localizations.scheduleSaturday.substring(0, 1),
+          localizations.scheduleSunday.substring(0, 1)
+        ][index];
             return GestureDetector(
               onTap: () => setState(() => selectedDayIndex = index),
               child: Column(
@@ -281,12 +339,12 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
         Expanded(
           child: ListView(
             children: [
-              if (am.isNotEmpty) _buildAnimeSection('上午', am),
-              if (pm.isNotEmpty) _buildAnimeSection('下午', pm),
-              if (night.isNotEmpty) _buildAnimeSection('晚上', night),
-              if (unknownDayEpisodes.isNotEmpty) _buildAnimeSectionWithoutTime('尚未公布', unknownDayEpisodes),
+              if (am.isNotEmpty) _buildAnimeSection('上午', am, localizations),
+              if (pm.isNotEmpty) _buildAnimeSection('下午', pm, localizations),
+              if (night.isNotEmpty) _buildAnimeSection('晚上', night, localizations),
+              if (unknownDayEpisodes.isNotEmpty) _buildAnimeSectionWithoutTime('尚未公布', unknownDayEpisodes, localizations),
               if (am.isEmpty && pm.isEmpty && night.isEmpty && unknownDayEpisodes.isEmpty)
-                const Center(child: Text('今天沒有更新')),
+                Center(child: Text(localizations.scheduleNoData)),
             ],
           ),
         ),
@@ -294,7 +352,7 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildAnimeSection(String label, List<AnimeEpisode> episodes) {
+  Widget _buildAnimeSection(String label, List<AnimeEpisode> episodes, AppLocalizations localizations) {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: Column(
@@ -307,8 +365,8 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
             final epMid = DateTime(ep.airTime.year, ep.airTime.month, ep.airTime.day);
             final daysDiff = epMid.difference(DateTime(nowMid.year, nowMid.month, nowMid.day)).inDays;
             final diffText = daysDiff == 0
-                ? '今天'
-                : (daysDiff > 0 ? '距今 $daysDiff 天後' : '距今 ${-daysDiff} 天前');
+                ? localizations.scheduleToday
+                : (daysDiff > 0 ? '$daysDiff ${localizations.daysAgo}' : '${-daysDiff} ${localizations.daysAgo}');
             final timeStr = DateFormat('HH:mm').format(ep.airTime);
             return Card(
               child: ListTile(
@@ -326,7 +384,7 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
                           return SingleChildScrollView(
                             controller: scrollController,
                             padding: const EdgeInsets.all(16),
-                            child: _buildAnimeDetailContent(ep, timeStr, diffText),
+                            child: _buildAnimeDetailContent(ep, timeStr, diffText, localizations),
                           );
                         },
                       );
@@ -341,7 +399,7 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildAnimeSectionWithoutTime(String label, List<AnimeEpisode> episodes) {
+  Widget _buildAnimeSectionWithoutTime(String label, List<AnimeEpisode> episodes, AppLocalizations localizations) {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: Column(
@@ -354,8 +412,8 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
             final epMid = DateTime(ep.airTime.year, ep.airTime.month, ep.airTime.day);
             final daysDiff = epMid.difference(DateTime(nowMid.year, nowMid.month, nowMid.day)).inDays;
             final diffText = daysDiff == 0
-                ? '今天'
-                : (daysDiff > 0 ? '距今 $daysDiff 天後' : '距今 ${-daysDiff} 天前');
+                ? localizations.scheduleToday
+                : (daysDiff > 0 ? '$daysDiff ${localizations.daysAgo}' : '${-daysDiff} ${localizations.daysAgo}');
             final dateStr = DateFormat('MM/dd').format(ep.airTime);
             return Card(
               child: ListTile(
@@ -373,7 +431,7 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
                           return SingleChildScrollView(
                             controller: scrollController,
                             padding: const EdgeInsets.all(16),
-                            child: _buildAnimeDetailContent(ep, '時間待定', diffText),
+                            child: _buildAnimeDetailContent(ep, '時間待定', diffText, localizations),
                           );
                         },
                       );
@@ -388,13 +446,13 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildAnimeDetailContent(AnimeEpisode ep, String timeText, String diffText) {
+  Widget _buildAnimeDetailContent(AnimeEpisode ep, String timeText, String diffText, AppLocalizations localizations) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('${ep.title} - 第${ep.label}集', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
-        if (ep.seasonalInfo.isNotEmpty) Text('季度：${ep.seasonalInfo}'),
+        if (ep.seasonalInfo.isNotEmpty) Text('${localizations.scheduleSeason}：${ep.seasonalInfo}'),
         const SizedBox(height: 8),
         Text('播出時間：$timeText'),
         Text(diffText),
@@ -411,14 +469,14 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
                 }),
               ));
             },
-            child: const Text('顯示更多'),
+            child: Text(localizations.edit),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildBookMonthly() {
+  Widget _buildBookMonthly(AppLocalizations localizations) {
     final today = DateTime.now();
     final year = currentMonth.year;
     final month = currentMonth.month;
@@ -459,7 +517,7 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
                 }
               },
               child: Text(
-                '$year年 $month月',
+                DateFormat('yyyy年MM月', 'zh_TW').format(DateTime(year, month)),
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
@@ -475,7 +533,7 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
           ],
         ),
         SwitchListTile(
-          title: const Text('顯示動畫標記'),
+          title: Text('顯示動畫標記'),
           value: showAnimeMark,
           onChanged: (val) => setState(() => showAnimeMark = val),
         ),
@@ -503,7 +561,7 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
                         builder: (ctx, scrollController) {
                           return SingleChildScrollView(
                             controller: scrollController,
-                            child: _buildDateDetailBottomSheet(date, booksToday, hasAnime),
+                            child: _buildDateDetailBottomSheet(date, booksToday, hasAnime, localizations),
                           );
                         },
                       );
@@ -560,7 +618,7 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
               _legend(Colors.green, '日版小說'),
               _legend(Colors.orange, '台版漫畫'),
               _legend(Colors.purple, '日版漫畫'),
-              _legend(Colors.pink, '動畫'),
+              _legend(Colors.pink, localizations.anime),
             ],
           ),
         ),
@@ -568,7 +626,7 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildDateDetailBottomSheet(DateTime date, List<BookRelease> booksToday, bool hasAnime) {
+  Widget _buildDateDetailBottomSheet(DateTime date, List<BookRelease> booksToday, bool hasAnime, AppLocalizations localizations) {
     final today = DateTime.now();
     final nowMid = DateTime(today.year, today.month, today.day);
     final dateMid = DateTime(date.year, date.month, date.day);
@@ -593,7 +651,7 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
           Text(diffText),
           const Divider(),
           if (booksToday.isNotEmpty) ...[
-            const Text('◆ 書籍'),
+            Text('◆ ${localizations.thisMonthBooks}'),
             for (var b in booksToday)
               ListTile(
                 title: Text(b.title),
@@ -606,18 +664,18 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
                         : ComicsDetailPage(work: {"title": b.title, "comics_id": b.id});
                     Navigator.push(context, MaterialPageRoute(builder: (_) => page));
                   },
-                  child: const Text('詳細'),
+                  child: Text(localizations.edit),
                 ),
               ),
           ],
           if (animeToday.isNotEmpty) ...[
             const SizedBox(height: 8),
-            const Text('◆ 動畫'),
+            Text('◆ ${localizations.anime}'),
             // fix 2: show a detail button on the right, no second bottomSheet
             for (var ep in animeToday)
               ListTile(
                 title: Text('${ep.title} 第${ep.label}集'),
-                subtitle: _buildAnimeTodaySubtitle(ep),
+                subtitle: _buildAnimeTodaySubtitle(ep, localizations),
                 trailing: ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
@@ -628,27 +686,27 @@ class _SchedulePageState extends State<SchedulePage> with SingleTickerProviderSt
                       }),
                     ));
                   },
-                  child: const Text('詳細'),
+                  child: Text(localizations.edit),
                 ),
               ),
           ],
           if (booksToday.isEmpty && animeToday.isEmpty)
-            const Padding(
-              padding: EdgeInsets.only(top: 20),
-              child: Center(child: Text('當天無出版資訊')),
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: Center(child: Text(localizations.scheduleNoData)),
             ),
         ],
       ),
     );
   }
 
-  Widget _buildAnimeTodaySubtitle(AnimeEpisode ep) {
+  Widget _buildAnimeTodaySubtitle(AnimeEpisode ep, AppLocalizations localizations) {
     final nowMid = DateTime.now();
     final epMid = DateTime(ep.airTime.year, ep.airTime.month, ep.airTime.day);
     final daysDiff = epMid.difference(DateTime(nowMid.year, nowMid.month, nowMid.day)).inDays;
     final diffText = daysDiff == 0
-        ? '今天'
-        : (daysDiff > 0 ? '距今 $daysDiff 天後' : '距今 ${-daysDiff} 天前');
+        ? localizations.scheduleToday
+        : (daysDiff > 0 ? '$daysDiff ${localizations.daysAgo}' : '${-daysDiff} ${localizations.daysAgo}');
     if (ep.isTimeUnknown) {
       final dateStr = DateFormat('MM/dd').format(ep.airTime);
       return Text('播出日期：$dateStr | $diffText | 時間待定');

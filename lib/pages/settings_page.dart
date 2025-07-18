@@ -1,6 +1,15 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/notification_service.dart';
+import '../services/data_install_dialog.dart';
+import '../database/work_database.dart';
 import 'terms_of_service_page.dart';
 import 'privacy_policy_page.dart';
+import '../l10n/app_localizations.dart';
+import '../main.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -10,258 +19,420 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  // 假資料
-  String theme = 'system';
-  bool saveLocally = true;
-  bool autoUpdate = true;
-  bool pushNotifications = true;
-  int imageQuality = 80;
-  String language = 'zh-TW';
-  String cacheSize = 'test.test GB';
-  String username = 'test';
-  String email = 'test@test.com';
-  bool privacyMode = false;
-  bool showComments = true;
-  bool commentNotifications = true;
-  bool autoPlayVideos = false;
-  bool showSpoilers = false;
-  bool sharelist = false;
-  bool shareCollections = false;
-  bool showOnlineStatus = true;
-  bool newEpisodeNotifications = true;
-  bool followedSeriesUpdates = true;
-  bool newsletterSubscription = true;
+  final WorkDatabase _db = WorkDatabase();
+  final NotificationService _notificationService = NotificationService();
+  
+  // 資料庫相關
+  String _databaseSize = '計算中...';
+  bool _hasDatabaseData = true;
+  
+  // 作品通知設定
+  bool _animeNotificationEnabled = false;
+  bool _novelNotificationEnabled = false;
+  bool _comicsNotificationEnabled = false;
+  
+  // 通知設定
+  bool _notificationVibrationEnabled = false;
+  TimeOfDay _notificationTime = const TimeOfDay(hour: 9, minute: 0);
+  bool _dataUpdateNotificationEnabled = false;
+  
+  // 語言設定
+  Locale? _selectedLocale;
 
-  void handleSettingChange(String key, dynamic value) {
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+    _calculateDatabaseSize();
+    _checkDatabaseData();
+  }
+
+  @override
+  void dispose() {
+    _db.close();
+    super.dispose();
+  }
+
+  Future<void> _loadSettings() async {
+    final animeEnabled = await _notificationService.getAnimeNotificationEnabled();
+    final novelEnabled = await _notificationService.getNovelNotificationEnabled();
+    final comicsEnabled = await _notificationService.getComicsNotificationEnabled();
+    
+    final vibrationEnabled = await _notificationService.getNotificationVibrationEnabled();
+    final notificationTime = await _notificationService.getNotificationTime();
+    final dataUpdateEnabled = await _notificationService.getDataUpdateNotificationEnabled();
+    
+    // 載入語言設定
+    final prefs = await SharedPreferences.getInstance();
+    final localeString = prefs.getString('locale');
+    Locale? locale;
+    if (localeString != null) {
+      final parts = localeString.split('_');
+      locale = Locale(parts[0], parts.length > 1 ? parts[1] : null);
+    }
+    
     setState(() {
-      switch(key) {
-        case 'theme':
-          theme = value;
-          break;
-        case 'saveLocally':
-          saveLocally = value;
-          break;
-        case 'autoUpdate':
-          autoUpdate = value;
-          break;
-        case 'pushNotifications':
-          pushNotifications = value;
-          break;
-        case 'imageQuality':
-          imageQuality = value;
-          break;
-        case 'language':
-          language = value;
-          break;
-        case 'cacheSize':
-          cacheSize = value;
-          break;
-        case 'username':
-          username = value;
-          break;
-        case 'email':
-          email = value;
-          break;
-        case 'privacyMode':
-          privacyMode = value;
-          break;
-        case 'showComments':
-          showComments = value;
-          break;
-        case 'commentNotifications':
-          commentNotifications = value;
-          break;
-        case 'autoPlayVideos':
-          autoPlayVideos = value;
-          break;
-        case 'showSpoilers':
-          showSpoilers = value;
-          break;
-        case 'sharelist':
-          sharelist = value;
-          break;
-        case 'shareCollections':
-          shareCollections = value;
-          break;
-        case 'showOnlineStatus':
-          showOnlineStatus = value;
-          break;
-        case 'newEpisodeNotifications':
-          newEpisodeNotifications = value;
-          break;
-        case 'followedSeriesUpdates':
-          followedSeriesUpdates = value;
-          break;
-        case 'newsletterSubscription':
-          newsletterSubscription = value;
-          break;
-      }
+      _animeNotificationEnabled = animeEnabled;
+      _novelNotificationEnabled = novelEnabled;
+      _comicsNotificationEnabled = comicsEnabled;
+      
+      _notificationVibrationEnabled = vibrationEnabled;
+      _notificationTime = TimeOfDay(
+        hour: int.parse(notificationTime.split(':')[0]),
+        minute: int.parse(notificationTime.split(':')[1]),
+      );
+      _dataUpdateNotificationEnabled = dataUpdateEnabled;
+      _selectedLocale = locale;
     });
   }
 
-  void handleClearCache() {
-    setState(() {
-      cacheSize = '0 GB';
+  Future<void> _calculateDatabaseSize() async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final databaseFile = File(p.join(directory.path, 'work_database.sqlite'));
+      
+      if (await databaseFile.exists()) {
+        final bytes = await databaseFile.length();
+        final mb = bytes / (1024 * 1024);
+        setState(() {
+          _databaseSize = '${mb.toStringAsFixed(2)} MB';
+        });
+      } else {
+        setState(() {
+          _databaseSize = '0 MB';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _databaseSize = '無法計算';
+      });
+    }
+  }
+
+  Future<void> _checkDatabaseData() async {
+    try {
+      final worksCount = await _db.select(_db.works).get();
+      setState(() {
+        _hasDatabaseData = worksCount.isNotEmpty;
+      });
+    } catch (e) {
+      setState(() {
+        _hasDatabaseData = false;
+      });
+    }
+  }
+
+  Future<void> _showDeleteDataDialog() async {
+    final bool? shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('刪除資料'),
+        content: const Text('確定要刪除所有資料嗎？\n\n刪除後：\n• 所有下載的資料將被清空\n• 應用內將無法顯示任何內容\n• 需要重新下載資料才能正常使用'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('刪除', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete == true) {
+      await _deleteAllData();
+    }
+  }
+
+  Future<void> _deleteAllData() async {
+    try {
+      // 顯示刪除進度
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const AlertDialog(
+          title: Text('刪除中'),
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Text('正在刪除資料...'),
+            ],
+          ),
+        ),
+      );
+
+      // 清空資料庫
+      await _db.clearAllData();
+      
+      // 標記資料未安裝
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isDataInstalled', false);
+      
+      // 更新狀態
+      setState(() {
+        _hasDatabaseData = false;
+      });
+      
+      // 重新計算資料庫大小
+      await _calculateDatabaseSize();
+      
+      // 關閉進度對話框
+      Navigator.of(context).pop();
+      
+      // 顯示成功訊息
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('資料已成功刪除')),
+      );
+    } catch (e) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('刪除失敗：$e')),
+      );
+    }
+  }
+
+  Future<void> _showDownloadDataDialog() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => DataInstallDialog(db: _db),
+    ).then((_) async {
+      // 下載完成後更新狀態
+      _checkDatabaseData();
+      _calculateDatabaseSize();
+      
+      // 記錄資料更新時間
+      await _notificationService.recordDataUpdate();
     });
+  }
+
+  Future<void> _toggleNotificationSetting(String type, bool value) async {
+    if (value) {
+      // 請求通知權限
+      await _notificationService.initialize();
+      final granted = await _notificationService.requestPermissions();
+      
+      if (!granted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('需要通知權限才能啟用此功能')),
+        );
+        return;
+      }
+    }
+
+    // 儲存設定
+    switch (type) {
+      case 'anime':
+        await _notificationService.setAnimeNotificationEnabled(value);
+        setState(() {
+          _animeNotificationEnabled = value;
+        });
+        break;
+      case 'novel':
+        await _notificationService.setNovelNotificationEnabled(value);
+        setState(() {
+          _novelNotificationEnabled = value;
+        });
+        break;
+      case 'comics':
+        await _notificationService.setComicsNotificationEnabled(value);
+        setState(() {
+          _comicsNotificationEnabled = value;
+        });
+        break;
+    }
+  }
+
+  Future<void> _testNotifications() async {
+    try {
+      await _notificationService.checkAndSendNotifications();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('通知檢查完成！如果有新集數將會收到通知')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('通知檢查失敗：$e')),
+      );
+    }
+  }
+
+  Future<void> _toggleGeneralNotificationSetting(String type, bool value) async {
+    switch (type) {
+      case 'vibration':
+        await _notificationService.setNotificationVibrationEnabled(value);
+        setState(() {
+          _notificationVibrationEnabled = value;
+        });
+        break;
+      case 'dataUpdate':
+        await _notificationService.setDataUpdateNotificationEnabled(value);
+        setState(() {
+          _dataUpdateNotificationEnabled = value;
+        });
+        break;
+    }
+  }
+
+  Future<void> _selectNotificationTime() async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: _notificationTime,
+    );
+    
+    if (picked != null) {
+      final timeString = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+      await _notificationService.setNotificationTime(timeString);
+      setState(() {
+        _notificationTime = picked;
+      });
+    }
+  }
+
+  Widget _buildLanguageSelector(AppLocalizations localizations) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButton<Locale?>(
+        value: _selectedLocale,
+        isExpanded: true,
+        underline: Container(),
+        icon: const Icon(Icons.arrow_drop_down),
+        style: TextStyle(
+          fontSize: 16,
+          color: Theme.of(context).textTheme.bodyLarge?.color,
+        ),
+        items: [
+          DropdownMenuItem<Locale?>(
+            value: null,
+            child: Row(
+              children: [
+                const Icon(Icons.settings, size: 20),
+                const SizedBox(width: 12),
+                Text(localizations.languageSystem),
+              ],
+            ),
+          ),
+          DropdownMenuItem<Locale?>(
+            value: const Locale('zh', ''),
+            child: Row(
+              children: [
+                const Text('🇹🇼', style: TextStyle(fontSize: 16)),
+                const SizedBox(width: 12),
+                Text(localizations.languageChinese),
+              ],
+            ),
+          ),
+          DropdownMenuItem<Locale?>(
+            value: const Locale('en', ''),
+            child: Row(
+              children: [
+                const Text('🇺🇸', style: TextStyle(fontSize: 16)),
+                const SizedBox(width: 12),
+                Text(localizations.languageEnglish),
+              ],
+            ),
+          ),
+          DropdownMenuItem<Locale?>(
+            value: const Locale('ja', ''),
+            child: Row(
+              children: [
+                const Text('🇯🇵', style: TextStyle(fontSize: 16)),
+                const SizedBox(width: 12),
+                Text(localizations.languageJapanese),
+              ],
+            ),
+          ),
+        ],
+        onChanged: (value) {
+          setState(() {
+            _selectedLocale = value;
+          });
+          MyApp.of(context)?.changeLocale(value);
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('設定'),
+        title: Text(localizations.settingsTitle),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // 用戶資料管理
+          // 語言設定
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('用戶資料', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  TextField(
-                    decoration: const InputDecoration(labelText: '用戶名稱'),
-                    controller: TextEditingController(text: username),
-                    onChanged: (value) => handleSettingChange('username', value),
-                  ),
-                  TextField(
-                    decoration: const InputDecoration(labelText: '電子郵件'),
-                    controller: TextEditingController(text: email),
-                    onChanged: (value) => handleSettingChange('email', value),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('隱私模式 (隱藏收藏)'),
-                      Switch(
-                        value: privacyMode,
-                        onChanged: (val) => handleSettingChange('privacyMode', val),
-                      ),
-                    ],
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // 修改個人資料的操作
-                    },
-                    icon: const Icon(Icons.person),
-                    label: const Text('修改個人資料'),
-                  ),
+                  Text(localizations.language, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+                  _buildLanguageSelector(localizations),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 16),
-          // 互動設定
+          // 作品通知
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('互動設定', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(localizations.workNotificationTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+                  _buildNotificationSwitch(
+                    title: localizations.animeNotificationTitle,
+                    description: localizations.animeNotificationDesc,
+                    value: _animeNotificationEnabled,
+                    onChanged: (value) => _toggleNotificationSetting('anime', value),
+                  ),
                   const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text('顯示留言'),
-                          Text('在作品頁面顯示其他用戶的留言', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                        ],
-                      ),
-                      Switch(
-                        value: showComments,
-                        onChanged: (val) => handleSettingChange('showComments', val),
-                      ),
-                    ],
+                  _buildNotificationSwitch(
+                    title: localizations.novelNotificationTitle,
+                    description: localizations.novelNotificationDesc,
+                    value: _novelNotificationEnabled,
+                    onChanged: (value) => _toggleNotificationSetting('novel', value),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text('留言通知'),
-                          Text('收到留言回覆時通知我', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                        ],
-                      ),
-                      Switch(
-                        value: commentNotifications,
-                        onChanged: (val) => handleSettingChange('commentNotifications', val),
-                      ),
-                    ],
+                  const SizedBox(height: 8),
+                  _buildNotificationSwitch(
+                    title: localizations.comicsNotificationTitle,
+                    description: localizations.comicsNotificationDesc,
+                    value: _comicsNotificationEnabled,
+                    onChanged: (value) => _toggleNotificationSetting('comics', value),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text('顯示更詳細資訊'),
-                          Text('在作品頁面，會有更詳細的資訊顯示', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                        ],
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _testNotifications,
+                      icon: const Icon(Icons.notifications),
+                      label: Text(localizations.checkNotificationNow),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
                       ),
-                      Switch(
-                        value: autoPlayVideos,
-                        onChanged: (val) => handleSettingChange('autoPlayVideos', val),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 16),
-          // 隱私設定
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('隱私設定', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text('分享我的清單'),
-                          Text('允許其他用戶查看我的清單', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                        ],
-                      ),
-                      Switch(
-                        value: sharelist,
-                        onChanged: (val) => handleSettingChange('sharelist', val),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text('分享收藏列表'),
-                        ],
-                      ),
-                      Switch(
-                        value: shareCollections,
-                        onChanged: (val) => handleSettingChange('shareCollections', val),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
+          
           // 通知設定
           Card(
             child: Padding(
@@ -269,28 +440,29 @@ class _SettingsPageState extends State<SettingsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('通知設定', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(localizations.generalNotificationTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+                  _buildNotificationSwitch(
+                    title: localizations.vibrationNotificationTitle,
+                    description: localizations.vibrationNotificationDesc,
+                    value: _notificationVibrationEnabled,
+                    onChanged: (value) => _toggleGeneralNotificationSetting('vibration', value),
+                  ),
                   const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text('新集數通知'),
-                        ],
-                      ),
-                      Switch(
-                        value: newEpisodeNotifications,
-                        onChanged: (val) => handleSettingChange('newEpisodeNotifications', val),
-                      ),
-                    ],
+                  _buildNotificationTimeSelector(localizations),
+                  const SizedBox(height: 8),
+                  _buildNotificationSwitch(
+                    title: localizations.dataUpdateNotificationTitle,
+                    description: localizations.dataUpdateNotificationDesc,
+                    value: _dataUpdateNotificationEnabled,
+                    onChanged: (value) => _toggleGeneralNotificationSetting('dataUpdate', value),
                   ),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 16),
+          
           // 儲存空間管理
           Card(
             child: Padding(
@@ -298,67 +470,54 @@ class _SettingsPageState extends State<SettingsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('儲存空間', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
+                  Text(localizations.storageTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('快取大小'),
-                          Text('目前使用：$cacheSize', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                          Text(localizations.databaseSize),
+                          Text('${localizations.currentUsage}$_databaseSize', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                         ],
                       ),
-                      ElevatedButton.icon(
-                        onPressed: handleClearCache,
-                        icon: const Icon(Icons.delete),
-                        label: const Text('清除快取'),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+                      IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: _calculateDatabaseSize,
+                        tooltip: localizations.recalculate,
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          // 帳號與安全
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('帳號與安全', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // 設定雙重驗證
-                    },
-                    icon: const Icon(Icons.security),
-                    label: const Text('設定雙重驗證'),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // 查看已登入裝置
-                    },
-                    icon: const Icon(Icons.devices),
-                    label: const Text('查看已登入裝置'),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // 登出所有裝置
-                    },
-                    icon: const Icon(Icons.logout),
-                    label: const Text('登出所有裝置'),
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: _hasDatabaseData
+                        ? ElevatedButton.icon(
+                            onPressed: _showDeleteDataDialog,
+                            icon: const Icon(Icons.delete),
+                            label: Text(localizations.deleteData),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                            ),
+                          )
+                        : ElevatedButton.icon(
+                            onPressed: _showDownloadDataDialog,
+                            icon: const Icon(Icons.download),
+                            label: Text(localizations.downloadData),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
                   ),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 16),
+          
           // 關於
           Card(
             child: Padding(
@@ -366,14 +525,15 @@ class _SettingsPageState extends State<SettingsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('關於', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
+                  Text(localizations.aboutTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
                   Row(
-                    children: const [
-                      Text('版本: '),
-                      Text('Pre-Alpha v0.1.2', style: TextStyle(fontWeight: FontWeight.bold)),
+                    children: [
+                      Text(localizations.version),
+                      const Text('Pre-Alpha v0.2.0', style: TextStyle(fontWeight: FontWeight.bold)),
                     ],
                   ),
+                  const SizedBox(height: 8),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
@@ -381,7 +541,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         MaterialPageRoute(builder: (_) => const TermsOfServicePage()),
                       );
                     },
-                    child: const Text('查看服務條款'),
+                    child: Text(localizations.viewTermsOfService),
                   ),
                   TextButton(
                     onPressed: () {
@@ -390,7 +550,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         MaterialPageRoute(builder: (_) => const PrivacyPolicyPage()),
                       );
                     },
-                    child: const Text('查看隱私政策'),
+                    child: Text(localizations.viewPrivacyPolicy),
                   ),
                 ],
               ),
@@ -398,6 +558,56 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildNotificationSwitch({
+    required String title,
+    required String description,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title),
+              Text(description, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            ],
+          ),
+        ),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNotificationTimeSelector(AppLocalizations localizations) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(localizations.notificationTimeTitle),
+              Text(localizations.notificationTimeDesc, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            ],
+          ),
+        ),
+        TextButton(
+          onPressed: _selectNotificationTime,
+          child: Text(
+            '${_notificationTime.hour.toString().padLeft(2, '0')}:${_notificationTime.minute.toString().padLeft(2, '0')}',
+            style: const TextStyle(fontSize: 16),
+          ),
+        ),
+      ],
     );
   }
 }

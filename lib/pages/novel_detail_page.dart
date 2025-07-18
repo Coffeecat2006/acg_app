@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import '../database/favorites_database.dart';
+import '../database/work_database.dart';
 import 'about_page.dart';
 import 'tag_management_page.dart';
+import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class NovelDetailPage extends StatefulWidget {
   final Map<String, dynamic> work;
@@ -27,15 +29,130 @@ class _NovelDetailPageState extends State<NovelDetailPage> {
   }
 
   Future<Map<String, dynamic>> _fetchNovelDetail() async {
-    final String novelId = widget.work['novel_id'];
-    final String year = novelId.substring(0, 4);
-    final jsonString = await rootBundle.loadString('assets/data/text/novel/${year}novel.json');
-    final List data = json.decode(jsonString);
-    final detail = data.firstWhere((element) => element['id'] == novelId, orElse: () => {});
-    if (detail.isEmpty) {
+    final String novelId = widget.work['novel_id'] as String;
+    final db = WorkDatabase();
+    
+    // 使用 get() 而不是 getSingleOrNull() 來避免 "Too many elements" 錯誤
+    final novelRows = await (db.select(db.novels)
+          ..where((t) => t.id.equals(novelId)))
+        .get();
+    
+    if (novelRows.isEmpty) {
       throw Exception("找不到對應的小說資料 (novelId=$novelId)");
     }
-    return detail as Map<String, dynamic>;
+    
+    final novelRow = novelRows.first;
+    
+    // 獲取詳細資料從 NovelBooks 表
+    final bookRows = await (db.select(db.novelBooks)
+          ..where((t) => t.novelId.equals(novelId)))
+        .get();
+    
+    // 合併資料
+    Map<String, dynamic> result = novelRow.toJson();
+    
+    if (bookRows.isNotEmpty) {
+      final bookRow = bookRows.first;
+      Map<String, dynamic> bookData = bookRow.toJson();
+      result['details'] = {
+        'author': bookData['author'],
+        'illustrator': bookData['illustrator'],
+        'publish_date_tw': _formatDateTime(bookData['publishDateTw']),
+        'publish_date_jp': _formatDateTime(bookData['publishDateJp']),
+        'synopsis': bookData['synopsis'],
+        'purchase_physical': bookData['purchasePhysical'] != null && bookData['purchasePhysical'].toString().isNotEmpty
+            ? _safeJsonDecode(bookData['purchasePhysical']) 
+            : [],
+        'purchase_ebook': bookData['purchaseEbook'] != null && bookData['purchaseEbook'].toString().isNotEmpty
+            ? _safeJsonDecode(bookData['purchaseEbook']) 
+            : [],
+        'official_site': bookData['officialSite'],
+        'social_link': bookData['socialLink'],
+      };
+      
+      print('小說詳細資料: $result');
+      print('台版出版日期: ${bookData['publishDateTw']} -> ${_formatDateTime(bookData['publishDateTw'])}');
+      print('日版出版日期: ${bookData['publishDateJp']} -> ${_formatDateTime(bookData['publishDateJp'])}');
+    }
+    
+    // 處理封面圖片
+    if (result['coverImageRemote'] != null) {
+      result['cover_image'] = {'remote': result['coverImageRemote']};
+    }
+    
+    return result;
+  }
+
+  // 安全的 JSON 解析方法
+  dynamic _safeJsonDecode(String? jsonString) {
+    if (jsonString == null || jsonString.isEmpty) return [];
+    try {
+      print('解析 JSON: $jsonString');
+      final decoded = json.decode(jsonString);
+      print('解析結果: $decoded');
+      return decoded;
+    } catch (e) {
+      print('JSON 解析錯誤: $e, 原始字符串: $jsonString');
+      return [];
+    }
+  }
+
+  // 創建可點擊的超連結
+  Widget _buildClickableLink(String url, String displayText) {
+    return GestureDetector(
+      onTap: () async {
+        final Uri uri = Uri.parse(url);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      },
+      child: Text(
+        displayText,
+        style: const TextStyle(
+          fontSize: 16,
+          color: Colors.blue,
+          decoration: TextDecoration.underline,
+        ),
+      ),
+    );
+  }
+
+  // 專門處理 URL 內容
+  Widget _buildUrlContent(String? urlContent) {
+    if (urlContent == null || urlContent.isEmpty) {
+      return const Text('---', style: TextStyle(fontSize: 16));
+    }
+    
+    // 檢查是否是 URL
+    if (urlContent.startsWith('http')) {
+      return _buildClickableLink(urlContent, urlContent);
+    }
+    
+    // 如果不是 URL，當作普通文本顯示
+    return Text(urlContent, style: const TextStyle(fontSize: 16));
+  }
+
+  // 格式化時間顯示
+  String _formatDateTime(dynamic dateTime) {
+    if (dateTime == null) return '---';
+    try {
+      if (dateTime is DateTime) {
+        return DateFormat('yyyy-MM-dd').format(dateTime);
+      } else if (dateTime is String) {
+        if (dateTime.isEmpty) return '---';
+        final parsed = DateTime.tryParse(dateTime);
+        if (parsed != null) {
+          return DateFormat('yyyy-MM-dd').format(parsed);
+        }
+        return dateTime; // 如果解析失敗，返回原始字符串
+      } else if (dateTime is int) {
+        // 處理時間戳
+        return DateFormat('yyyy-MM-dd').format(DateTime.fromMillisecondsSinceEpoch(dateTime));
+      }
+      return dateTime.toString();
+    } catch (e) {
+      return dateTime?.toString() ?? '---';
+    }
   }
 
   Future<void> _initFavoriteStatus() async {
@@ -53,12 +170,10 @@ class _NovelDetailPageState extends State<NovelDetailPage> {
         });
       }
     } else {
-      final String tagString = widget.work["tags"] ?? "";
-      if (tagString.trim().isNotEmpty) {
-        setState(() {
-          _favoriteTags = tagString.split(',').map((t) => t.trim()).toSet();
-        });
-      }
+      // 如果未收藏，不初始化用戶收藏標籤（用戶收藏標籤和作品自帶標籤是不同的）
+      setState(() {
+        _favoriteTags = {};
+      });
     }
     setState(() {
       _isFavorite = fav;
@@ -213,16 +328,32 @@ class _NovelDetailPageState extends State<NovelDetailPage> {
 
   Widget _buildDivider() => const Divider(color: Colors.grey, thickness: 1, height: 32);
 
-  Widget _buildPurchaseLinks(String title, List list) {
+  Widget _buildPurchaseLinks(String title, dynamic list) {
+    if (list == null || (list is List && list.isEmpty)) {
+      return const SizedBox.shrink();
+    }
+    
+    // 確保是 List 類型
+    List items = list is List ? list : [];
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(title),
         const SizedBox(height: 4),
-        ...list.map<Widget>((item) {
+        ...items.map<Widget>((item) {
           final name = item['platform_name'] ?? '';
           final link = item['link'] ?? '';
-          return Text("$name ($link)", style: const TextStyle(fontSize: 16));
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (name.isNotEmpty) Text(name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                if (link.isNotEmpty) _buildClickableLink(link, link),
+              ],
+            ),
+          );
         }).toList(),
       ],
     );
@@ -285,9 +416,9 @@ class _NovelDetailPageState extends State<NovelDetailPage> {
                   _buildPurchaseLinks("電子書購買", details['purchase_ebook']),
                 _buildDivider(),
                 _buildSectionTitle("官方網站"),
-                _buildSectionContent(details['official_site'] ?? '---'),
+                _buildUrlContent(details['official_site']),
                 _buildSectionTitle("社群連結"),
-                _buildSectionContent(details['social_link'] ?? '---'),
+                _buildUrlContent(details['social_link']),
                 _buildDivider(),
                 if (_favoriteTags.isNotEmpty)
                   Wrap(

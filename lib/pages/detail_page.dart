@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'anime_detail_page.dart';
 import 'novel_detail_page.dart';
@@ -77,9 +76,9 @@ class _DetailPageState extends State<DetailPage> {
         "id": mediaId,
         "title": widget.work["title"] ?? "",
         "type": type,
-        "release_date": widget.work["release_date"] ?? "",
+        //"release_date": widget.work["release_date"] ?? "",
         "fav_date": DateTime.now().toIso8601String(),
-        "tags": widget.work["tags"] ?? "",
+        "tags": "", // 收藏標籤初始化為空字符串，不使用作品自帶的標籤
       };
       await FavoritesDatabaseHelper.instance.insertFavorite(record);
       setState(() {
@@ -213,9 +212,7 @@ class _DetailPageState extends State<DetailPage> {
                             "tags": tagStr,
                           };
                           await FavoritesDatabaseHelper.instance.insertFavorite(updatedRecord);
-                          setState(() {
-                            widget.work["tags"] = tagStr;
-                          });
+                          // 不修改作品自帶的標籤，收藏標籤只存儲在收藏數據庫中
                           Navigator.pop(ctx);
                         },
                         child: const Text("儲存標籤"),
@@ -307,8 +304,8 @@ class _DetailPageState extends State<DetailPage> {
     final String coverUrl = (widget.work['cover_image'] != null && widget.work['cover_image']['remote'] != null)
         ? widget.work['cover_image']['remote']
         : '';
-    final String synopsis = widget.work['Introduction'] ?? '暫無簡介';
-    final List<dynamic> categoryTags = widget.work['category_tags'] ?? [];
+    final String synopsis = widget.work['introduction'] ?? '暫無簡介';
+    final List<dynamic> categoryTags = widget.work['tags'] ?? [];
     final String news = widget.work['news'] ?? '';
 
     return Scaffold(

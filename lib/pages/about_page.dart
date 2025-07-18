@@ -1,67 +1,66 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../l10n/app_localizations.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    
     return Scaffold(
-      appBar: AppBar(title: const Text('關於 ACG大全')),
+      appBar: AppBar(title: Text(localizations.aboutAppTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildHeader(),
+          _buildHeader(localizations),
           const SizedBox(height: 24),
-          _buildIntro(),
+          _buildIntro(localizations),
           const SizedBox(height: 24),
-          _buildFunctionSpec(),
+          _buildFunctionSpec(localizations),
           const SizedBox(height: 24),
-          _buildFunctionTutorial(),
+          _buildFunctionTutorial(localizations),
           const SizedBox(height: 24),
-          _buildFuturePlan(),
+          _buildFuturePlan(localizations),
           const SizedBox(height: 24),
-          _buildContactInfo(),
+          _buildContactInfo(localizations),
         ],
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(AppLocalizations localizations) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        Text('ACG大全 - Pre-Alpha v0.1.2',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        SizedBox(height: 8),
-        Text('開發者資訊: coffeecatstudio'),
-        Text('開發人員: coffeecat'),
+      children: [
+        Text(localizations.appVersion,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Text(localizations.developerInfo),
+        Text(localizations.developer),
       ],
     );
   }
 
-  Widget _buildIntro() {
-    return const Column(
+  Widget _buildIntro(AppLocalizations localizations) {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('ACG大全 App 簡介',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        SizedBox(height: 8),
-        Text(
-          'ACG大全是一款專為 ACG 愛好者打造的資訊查詢 App，匯集動畫、漫畫、輕小說等多元資訊，'
-              '讓用戶能快速獲取最新作品資料、觀看平台與購買連結。\n\n'
-              '本 App 免費、無廣告、無商業用途，僅供查詢使用。',
-        ),
+        Text(localizations.appIntroTitle,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Text(localizations.appIntroContent),
       ],
     );
   }
 
-  Widget _buildFunctionSpec() {
+  Widget _buildFunctionSpec(AppLocalizations localizations) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('App 顯示資料',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(localizations.functionSpecTitle,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         _infoBlock('動畫資訊', [
           '名稱、日文名、原作',
@@ -108,7 +107,7 @@ class AboutPage extends StatelessWidget {
     );
   }
 
-  Widget _buildFunctionTutorial() {
+  Widget _buildFunctionTutorial(AppLocalizations localizations) {
     final tutorials = [
       {
         'icon': Icons.home,
@@ -194,7 +193,7 @@ class AboutPage extends StatelessWidget {
     );
   }
 
-  Widget _buildFuturePlan() {
+  Widget _buildFuturePlan(AppLocalizations localizations) {
     return const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -209,7 +208,7 @@ class AboutPage extends StatelessWidget {
     );
   }
 
-  Widget _buildContactInfo() {
+  Widget _buildContactInfo(AppLocalizations localizations) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

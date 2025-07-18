@@ -174,6 +174,20 @@ class WorkDatabase extends _$WorkDatabase {
   Future<void> upsertWork(WorksCompanion entry) async {
     await into(works).insertOnConflictUpdate(entry);
   }
+
+  // Clear all data from database
+  Future<void> clearAllData() async {
+    await transaction(() async {
+      await delete(episodes).go();
+      await delete(seasons).go();
+      await delete(anime).go();
+      await delete(comicsBooks).go();
+      await delete(comics).go();
+      await delete(novelBooks).go();
+      await delete(novels).go();
+      await delete(works).go();
+    });
+  }
 }
 
 LazyDatabase _openConnection() {

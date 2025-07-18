@@ -3,7 +3,6 @@ import '../database/favorites_database.dart';
 import 'anime_detail_page.dart';
 import 'novel_detail_page.dart';
 import 'comics_detail_page.dart';
-import 'tag_management_page.dart';
 
 enum FavoriteSortOption { titleAsc, titleDesc, releaseDateAsc, releaseDateDesc, favDateAsc, favDateDesc }
 
@@ -266,38 +265,48 @@ class _FavoritesPageState extends State<FavoritesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: _selectionMode
-            ? Text("已選 ${_selectedFavKeys.length} 筆")
-            : const Text("我的收藏"),
-        actions: [
-          if (_selectionMode) ...[
-            IconButton(
-              icon: const Icon(Icons.label),
-              tooltip: "設定標籤",
-              onPressed: _showBatchTagDialog,
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete),
-              tooltip: "刪除選中收藏",
-              onPressed: _deleteSelected,
-            ),
-          ],
-          IconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: "標籤管理",
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const TagManagementPage()));
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadFavorites,
-          ),
-        ],
-      ),
       body: Column(
         children: [
+          // 選擇模式操作欄
+          if (_selectionMode)
+            Container(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  Text(
+                    "已選 ${_selectedFavKeys.length} 筆",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.label),
+                    tooltip: "設定標籤",
+                    onPressed: _showBatchTagDialog,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    tooltip: "刪除選中收藏",
+                    onPressed: _deleteSelected,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    tooltip: "取消選擇",
+                    onPressed: () {
+                      setState(() {
+                        _selectedFavKeys.clear();
+                        _selectionMode = false;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          // 原有的過濾器和搜尋功能
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(

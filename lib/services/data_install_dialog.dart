@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 import 'data_import.dart';
 import '../database/work_database.dart';
+import 'notification_service.dart';
 
 class DataInstallDialog extends StatefulWidget {
   final WorkDatabase db;
@@ -34,6 +35,10 @@ class _DataInstallDialogState extends State<DataInstallDialog> {
       });
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isDataInstalled', true);
+      
+      // 記錄資料更新時間
+      await NotificationService().recordDataUpdate();
+      
       setState(() {
         _statusText = "Download complete!";
       });
