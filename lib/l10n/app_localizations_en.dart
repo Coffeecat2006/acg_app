@@ -381,7 +381,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutAppTitle => 'About ACG Encyclopedia';
 
   @override
-  String get appVersion => 'ACG Encyclopedia - Pre-Alpha v0.2.0';
+  String get appVersion => 'ACG Encyclopedia - Alpha v0.2.0';
 
   @override
   String get developerInfo => 'Developer Info: coffeecatstudio';

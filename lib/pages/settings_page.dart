@@ -530,7 +530,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   Row(
                     children: [
                       Text(localizations.version),
-                      const Text('Pre-Alpha v0.2.0', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text('Alpha v0.2.0', style: TextStyle(fontWeight: FontWeight.bold)),
                     ],
                   ),
                   const SizedBox(height: 8),

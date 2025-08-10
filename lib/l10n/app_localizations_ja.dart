@@ -381,7 +381,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aboutAppTitle => 'ACG大全について';
 
   @override
-  String get appVersion => 'ACG大全 - Pre-Alpha v0.2.0';
+  String get appVersion => 'ACG大全 - Alpha v0.2.0';
 
   @override
   String get developerInfo => '開発者情報：coffeecatstudio';

@@ -24,8 +24,8 @@ class _IntroPageState extends State<IntroPage> {
   Widget build(BuildContext context) {
     final pages = [
       _buildPage(
-        title: "ACG大全 App - Pre-Alpha v0.2.0",
-        content: "發布時間：2025 年 ? 月 ? 日 20:00（UTC+8）\n版本代號：Phoenix\n狀態：Pre-Alpha 測試版\n類型：APK（Android專用）",
+        title: "ACG大全 App - Alpha v0.2.0",
+        content: "發布時間：2025 年 7 月 29 日 20:00（UTC+8）\n版本代號：Phoenix\n狀態：Alpha 測試版\n類型：APK（Android專用）",
       ),
       _buildPage(
           title: "版本更新內容",

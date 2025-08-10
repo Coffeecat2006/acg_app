@@ -844,7 +844,7 @@ abstract class AppLocalizations {
   /// No description provided for @appVersion.
   ///
   /// In zh, this message translates to:
-  /// **'ACG大全 - Pre-Alpha v0.2.0'**
+  /// **'ACG大全 - Alpha v0.2.0'**
   String get appVersion;
 
   /// No description provided for @developerInfo.

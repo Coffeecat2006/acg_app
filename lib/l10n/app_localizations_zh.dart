@@ -381,7 +381,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aboutAppTitle => '關於 ACG大全';
 
   @override
-  String get appVersion => 'ACG大全 - Pre-Alpha v0.2.0';
+  String get appVersion => 'ACG大全 - Alpha v0.2.0';
 
   @override
   String get developerInfo => '開發者資訊: coffeecatstudio';
